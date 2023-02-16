@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "target": "ESNEXT",
+    "module": "ES2015",
+    "outDir": "../build",
+    "jsx": "preserve",
+    "strict": true,
+    "lib": ["ESNext", "DOM"],
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "types": ["@emotion/react/types/css-prop"],
+    "typeRoots": ["./@types"]
+  },
+  "include": ["./**/*.tsx", "./**/*.ts"],
+  "exclude": ["tsconfig.json"]
+}
