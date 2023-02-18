@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { SObjModel } from "../type";
+import { SObjModel } from "../factory/type";
 
 export const combineRecipe = [
   {
@@ -69,7 +69,7 @@ export const combineRecipe = [
   },
 ];
 
-export const SObjModels = {
+export const SushiObjModels = {
   ...getRecips("マグロ", {
     kiru: { output: { type: "transform", code: "ねぎとろ" }, scale: 1 },
   }),

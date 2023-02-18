@@ -1,4 +1,4 @@
-import { SUnitOptions } from "../type";
+import { SUnitModel, SUnitOptions } from "../factory/type";
 
 export const マグロ箱: SUnitOptions = {
   code: "マグロ箱",
@@ -120,7 +120,7 @@ export const 売却機: SUnitOptions = {
   transporter: [undefined, undefined, undefined, undefined],
 };
 
-export const SUnitModels: { [key: string]: SUnitOptions } = {
+export const SushiUnitModels: SUnitModel = {
   マグロ箱,
   サーモン箱,
   えび箱,

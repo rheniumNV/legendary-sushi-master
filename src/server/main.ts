@@ -5,9 +5,7 @@ import http from "http";
 import express from "express";
 import json2emap from "json2emap";
 import _ from "lodash";
-import { SUnit } from "../sushido/SUnit";
-import { SObj } from "../sushido/SObj";
-import { Pos } from "../sushido/type";
+
 import EventEmitter from "events";
 import { SushiNeosObjectManager } from "./SushiNeosObjectManager";
 
@@ -25,79 +23,6 @@ setInterval(() => {
   gm.update(0.1);
   events.emit("updated");
 }, 250);
-
-function formatPos(pos: Pos) {
-  return `[${pos[0]}; ${pos[1]}]`;
-}
-
-function unit2NeosObj(unit: SUnit): NeosObj {
-  return {
-    id: unit.id,
-    type: "Unit",
-    options: {
-      code: { type: "string", value: unit.options.code },
-      pos: { type: "float2", value: formatPos(unit.pos) },
-      direction: { type: "int", value: unit.direction.toString() },
-      progress: {
-        type: "float",
-        value: unit.stackProgress.toString(),
-      },
-    },
-  };
-}
-
-function obj2NeosObj(obj: SObj): NeosObj {
-  return {
-    id: obj.id,
-    type: "Obj",
-    options: {
-      code: { type: "string", value: obj.code },
-      pos: { type: "float2", value: obj._pos ? formatPos(obj._pos) : "-" },
-      speed: {
-        type: "float2",
-        value: obj._speed ? formatPos(obj._speed) : "-",
-      },
-      maxMoveTime: {
-        type: "float",
-        value: obj._maxMoveTime.toString(),
-      },
-      grabUserId: {
-        type: "string",
-        value: obj._grabUser?.id ?? "",
-      },
-    },
-  };
-}
-
-function getUpdate(sm: NeosSyncManager, gm: GameManager) {
-  const unitObjs = _.reduce(
-    gm.fm.sUnitArray,
-    (prev, curr) => ({
-      ...prev,
-      [curr.id]: unit2NeosObj(curr),
-    }),
-    {}
-  );
-
-  const objObjs = _.reduce(
-    gm.fm.sObjArray,
-    (prev, curr) => ({
-      ...prev,
-      [curr.id]: obj2NeosObj(curr),
-    }),
-    {}
-  );
-
-  const tasks = sm.updateNeosState({ ...unitObjs, ...objObjs });
-
-  const status = {
-    create: tasks.filter((v) => v.type === "create").length,
-    update: tasks.filter((v) => v.type === "update").length,
-    delete: tasks.filter((v) => v.type === "delete").length,
-  };
-  console.log(status);
-  return tasks;
-}
 
 wss.on("connection", (ws, request) => {
   console.log("on Websocket Connection");

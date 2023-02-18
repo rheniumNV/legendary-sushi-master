@@ -1,18 +1,20 @@
-import { SObjModels } from "./models/SObjModels";
 import { SObj } from "./SObj";
 import { SUnit } from "./SUnit";
 import _ from "lodash";
+import { FactoryManager } from "./FactoryManager";
 
 export class SUser {
   id: string;
   grabObjects: SObj[] = [];
+  fm: FactoryManager;
 
-  constructor(id: string) {
+  constructor(fm: FactoryManager, id: string) {
     this.id = id;
+    this.fm = fm;
   }
 
   grabObj(obj: SObj) {
-    const combinedObjCode = _.get(SObjModels, [
+    const combinedObjCode = _.get(this.fm.factoryModel.objModel, [
       obj.code,
       "recipe",
       this.grabObjects[0]?.code ?? "",
@@ -40,7 +42,7 @@ export class SUser {
 
   releaseObj(to: SUnit) {
     const obj = this.grabObjects[0];
-    const combinedObjCode = _.get(SObjModels, [
+    const combinedObjCode = _.get(this.fm.factoryModel.objModel, [
       obj?.code ?? "",
       "recipe",
       to.stacks[0]?.code ?? "",

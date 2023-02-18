@@ -1,10 +1,11 @@
 import { SObj } from "./SObj";
 import { SUnit } from "./SUnit";
-import { SUnitModels } from "./models/SUnitModels";
+import { SushiUnitModels } from "../models/SUnitModels";
 import _ from "lodash";
-import { Direction, Pos, SObjTask } from "./type";
+import { Direction, FactoryModel, Pos, SObjTask } from "./type";
 import { SUser } from "./SUser";
 import EventEmitter from "events";
+import { SushiObjModels } from "../models/SObjModels";
 
 function pos2key(pos: [number, number]) {
   return `${pos[0]},${pos[1]}`;
@@ -24,6 +25,8 @@ export class FactoryManager {
   sUsers: Map<string, SUser> = new Map<string, SUser>();
   tasks: SObjTask[] = [];
   coin: number = 0;
+
+  factoryModel: FactoryModel;
 
   public get sUnitArray() {
     let units: SUnit[] = [];
@@ -48,12 +51,23 @@ export class FactoryManager {
       code: string;
       pos: [number, number];
       direction: Direction;
-    }[]
+    }[],
+    factoryModel: FactoryModel = {
+      unitModel: SushiUnitModels,
+      objModel: SushiObjModels,
+    }
   ) {
+    this.factoryModel = factoryModel;
+
     map.forEach(({ code, pos, direction }) => {
       this.sUnits.set(
         pos2key(pos),
-        new SUnit(SUnitModels[code], pos, direction)
+        new SUnit(
+          this.factoryModel.unitModel[code],
+          pos,
+          direction,
+          factoryModel
+        )
       );
     });
   }
@@ -151,7 +165,7 @@ export class FactoryManager {
   grabObj(userId: string, targetObjId: string) {
     let user =
       this.sUsers.get(userId) ??
-      this.sUsers.set(userId, new SUser(userId)).get(userId);
+      this.sUsers.set(userId, new SUser(this, userId)).get(userId);
     const obj = this.sObjs.get(targetObjId);
     console.log(user, obj);
     if (user && obj) {
@@ -172,7 +186,7 @@ export class FactoryManager {
   startInteractUnit(userId: string, targetUnitId: string) {
     let user =
       this.sUsers.get(userId) ??
-      this.sUsers.set(userId, new SUser(userId)).get(userId);
+      this.sUsers.set(userId, new SUser(this, userId)).get(userId);
     const unit = this.sUnitArray.find(({ id }) => id === targetUnitId);
     if (user && unit) {
       unit.startInteract(user);

@@ -1,5 +1,5 @@
 import { css } from "@emotion/react";
-import { Pos } from "../sushido/type";
+import { Pos } from "../sushido/factory/type";
 
 export const posCss = ({ pos }: { pos: Pos }) =>
   css({

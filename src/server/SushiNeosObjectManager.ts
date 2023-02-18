@@ -1,9 +1,9 @@
 import { GameManager } from "../sushido";
-import { SObj } from "../sushido/SObj";
-import { SUnit } from "../sushido/SUnit";
+import { SObj } from "../sushido/factory/SObj";
+import { SUnit } from "../sushido/factory/SUnit";
 import { NeosObj, NeosSyncManager } from "./NeosSyncManager";
 import _ from "lodash";
-import { Pos } from "../sushido/type";
+import { Pos } from "../sushido/factory/type";
 
 function formatPos(pos: Pos) {
   return `[${pos[0]}; ${pos[1]}]`;

@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import {
   Direction,
+  FactoryModel,
   Pos,
   SId,
   SObjCombineTask,
@@ -12,7 +13,7 @@ import {
 } from "./type";
 import _ from "lodash";
 import { SObj } from "./SObj";
-import { SObjModels, SObjProcessModel } from "./models/SObjModels";
+import { SObjProcessModel } from "../models/SObjModels";
 import { SUser } from "./SUser";
 
 function processPos(
@@ -50,11 +51,19 @@ export class SUnit {
     speed: number;
   }[] = [];
 
-  constructor(options: SUnitOptions, pos: Pos, direction: Direction) {
+  protected _factoryModel: FactoryModel;
+
+  constructor(
+    options: SUnitOptions,
+    pos: Pos,
+    direction: Direction,
+    _factoryModel: FactoryModel
+  ) {
     this.id = uuidv4();
     this.pos = pos;
     this.options = options;
     this.direction = direction;
+    this._factoryModel = _factoryModel;
   }
 
   public getStackInputItemCount(): number {
@@ -95,7 +104,11 @@ export class SUnit {
     return _.map(
       this.options.process,
       ({ processCode, value, requireInteract }) => {
-        const p = _.get(SObjModels, [objCode, "process", processCode]);
+        const p = _.get(this._factoryModel.objModel, [
+          objCode,
+          "process",
+          processCode,
+        ]);
         if (p) {
           return [
             {
@@ -114,7 +127,7 @@ export class SUnit {
 
   public getCombineRecipe(objCode: string) {
     return (this.options.combiner?.count ?? 0) > 0
-      ? _.get(SObjModels, [objCode, "recipe"])
+      ? _.get(this._factoryModel.objModel, [objCode, "recipe"])
       : {};
   }
 
@@ -281,7 +294,7 @@ export class SUnit {
     }
   }
 
-  public static updateCombine(
+  private static updateCombine(
     task: SObjCombineTask,
     deltaTime: number,
     deleteObj: (sObj: SObj) => void
@@ -292,7 +305,11 @@ export class SUnit {
     ];
 
     if (objs.length >= 2 && task.target.options.combiner) {
-      const recipe = _.get(SObjModels, [objs[0].code, "recipe", objs[1].code]);
+      const recipe = _.get(task.target._factoryModel.objModel, [
+        objs[0].code,
+        "recipe",
+        objs[1].code,
+      ]);
       if (recipe) {
         task.target.stackProgress = Math.min(
           100,

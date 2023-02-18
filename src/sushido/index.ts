@@ -1,5 +1,5 @@
-import { FactoryManager } from "./FactoryManager";
-import { Direction, SObjModel, SUnitOptions } from "./type";
+import { FactoryManager } from "./factory/FactoryManager";
+import { Direction, SObjModel, SUnitOptions } from "./factory/type";
 
 export type GameEvent =
   | { code: "grabObj"; userId: string; objId: string }
