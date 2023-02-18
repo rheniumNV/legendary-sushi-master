@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import { useEffect, useState } from "react";
-import { SUser } from "../sushido/factory/SUser";
+import { SUser } from "../../sushido/factory/SUser";
 import { ObjVisual } from "./SObjView";
 import { directPosCss } from "./util";
 

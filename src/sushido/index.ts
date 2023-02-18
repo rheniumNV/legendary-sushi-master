@@ -1,5 +1,6 @@
+import { Customer } from "./Customer";
 import { FactoryManager } from "./factory/FactoryManager";
-import { Direction, SObjModel, SUnitOptions } from "./factory/type";
+import { Direction, Pos, SObjModel, SUnitOptions } from "./factory/type";
 
 export type GameEvent =
   | { code: "grabObj"; userId: string; objId: string }
@@ -20,22 +21,11 @@ export type FactoryModel = {
   objModel: { [key: string]: SObjModel };
 };
 
-export type GameModel = {
-  menu: string[];
-  customerOption: {};
-};
-
 export type GameData = {
   coin: number;
   dayCount: number;
+  menuCodes: string[];
 };
-
-export class Customer {
-  visualCode: string;
-  constructor(visualCode: string) {
-    this.visualCode = visualCode;
-  }
-}
 
 const setting: { code: string; pos: [number, number]; direction: Direction }[] =
   [
@@ -91,11 +81,14 @@ const setting: { code: string; pos: [number, number]; direction: Direction }[] =
     { code: "売却機", pos: [8, 5], direction: 0 },
     { code: "カウンター", pos: [1, 7], direction: 0 },
     { code: "カウンター", pos: [2, 7], direction: 0 },
+    { code: "ダイニングテーブル", pos: [2, 9], direction: 0 },
+    { code: "ダイニングテーブル", pos: [3, 9], direction: 0 },
+    { code: "ダイニングテーブル", pos: [4, 9], direction: 0 },
   ];
 
 export class GameManager {
   fm: FactoryManager;
-  customers: Customer[] = [];
+  customers: Customer[] = [new Customer("お客さんA")];
   coin: number = 0;
   dayCount: number = 0;
 
@@ -116,9 +109,11 @@ export class GameManager {
 
   update(deltaTime: number = 0) {
     this.fm.update(deltaTime);
-  }
 
-  getNeosState() {}
+    this.customers.forEach((customer) => {
+      customer.pos = [customer.pos[0], (customer.pos[1] + 0.1 * deltaTime) % 5];
+    });
+  }
 
   emitGameEvent(event: GameEvent) {
     switch (event.code) {

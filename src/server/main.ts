@@ -1,4 +1,3 @@
-import { NeosObj, NeosSyncManager, Task } from "./NeosSyncManager";
 import { GameManager } from "../sushido";
 import { WebSocketServer } from "ws";
 import http from "http";

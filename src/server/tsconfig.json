@@ -3,12 +3,11 @@
     "sourceMap": true,
     "target": "ESNEXT",
     "module": "CommonJS",
-    "jsx": "preserve",
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
     "typeRoots": ["./@types"]
   },
-  "include": ["./**/*.tsx", "./**/*.ts"],
+  "include": ["./**/*.ts"],
   "exclude": ["tsconfig.json"]
 }

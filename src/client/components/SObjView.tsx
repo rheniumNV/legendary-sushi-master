@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
-import { SObj } from "../sushido/factory/SObj";
-import { SUnit } from "../sushido/factory/SUnit";
-import { Pos, SId } from "../sushido/factory/type";
+import { SObj } from "../../sushido/factory/SObj";
+import { SUnit } from "../../sushido/factory/SUnit";
+import { Pos, SId } from "../../sushido/factory/type";
 import { posCss } from "./util";
 
 const objCss = css({

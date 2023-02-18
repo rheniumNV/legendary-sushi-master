@@ -7,7 +7,7 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 
 const clientConfig: Configuration & { devServer?: WebpackDevServerConfig } = {
   mode: isDevelopment ? "development" : "production",
-  entry: "./src/index.tsx",
+  entry: "./src/client/index.tsx",
   cache: true,
   target: "web",
   output: {
@@ -35,7 +35,7 @@ const clientConfig: Configuration & { devServer?: WebpackDevServerConfig } = {
       },
     ],
   },
-  plugins: [new HtmlWebpackPlugin({ template: "./src/index.html" })],
+  plugins: [new HtmlWebpackPlugin({ template: "./src/client/index.html" })],
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".jsx", ".png"],
     modules: [

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { css } from "@emotion/react";
 import { SUnitView } from "./components/SUnitView";
-import { GameManager } from "./sushido";
+import { GameManager } from "../sushido";
 import { useTimer } from "./util";
 import { SObjView } from "./components/SObjView";
 import { SUserView } from "./components/SUserView";
+import { CustomerView } from "./components/CostomerView";
 
 const appCss = css({
   fontSize: 30,
@@ -71,7 +72,11 @@ export function App() {
             }}
           />
         ))}
+        {gameManager.customers.map((customer) => (
+          <CustomerView customer={customer} />
+        ))}
       </div>
+
       {gameManager.fm.sUserArray.map((user) => (
         <SUserView user={user} />
       ))}

@@ -4,6 +4,7 @@ import { SUnit } from "../sushido/factory/SUnit";
 import { NeosObj, NeosSyncManager } from "./NeosSyncManager";
 import _ from "lodash";
 import { Pos } from "../sushido/factory/type";
+import { Customer } from "../sushido/Customer";
 
 function formatPos(pos: Pos) {
   return `[${pos[0]}; ${pos[1]}]`;
@@ -48,6 +49,17 @@ function obj2NeosObj(obj: SObj): NeosObj {
   };
 }
 
+function customer2NeosObj(customer: Customer) {
+  return {
+    id: customer.id,
+    type: "Customer",
+    options: {
+      code: { type: "string", value: customer.visualCode },
+      pos: { type: "float2", value: formatPos(customer.pos) },
+    },
+  };
+}
+
 export class SushiNeosObjectManager {
   sm: NeosSyncManager = new NeosSyncManager();
 
@@ -78,7 +90,20 @@ export class SushiNeosObjectManager {
       {}
     );
 
-    const tasks = this.sm.updateNeosState({ ...unitObjs, ...objObjs });
+    const customerObjs = _.reduce(
+      gm.customers,
+      (prev, curr) => ({
+        ...prev,
+        [curr.id]: customer2NeosObj(curr),
+      }),
+      {}
+    );
+
+    const tasks = this.sm.updateNeosState({
+      ...unitObjs,
+      ...objObjs,
+      ...customerObjs,
+    });
 
     const status = {
       create: tasks.filter((v) => v.type === "create").length,

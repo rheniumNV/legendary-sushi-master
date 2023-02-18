@@ -120,6 +120,13 @@ export const 売却機: SUnitOptions = {
   transporter: [undefined, undefined, undefined, undefined],
 };
 
+export const ダイニングテーブル: SUnitOptions = {
+  code: "ダイニングテーブル",
+  stack: { maxCount: 1 },
+  process: [{ processCode: "taberu", requireInteract: true, value: 14 }],
+  transporter: [undefined, undefined, undefined, undefined],
+};
+
 export const SushiUnitModels: SUnitModel = {
   マグロ箱,
   サーモン箱,
@@ -135,4 +142,5 @@ export const SushiUnitModels: SUnitModel = {
   ミキサー,
   コンバイナ,
   売却機,
+  ダイニングテーブル,
 };

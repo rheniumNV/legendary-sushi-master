@@ -6,7 +6,7 @@ export type SUnitCode = string;
 export type SObjCode = string;
 export type Pos = [number, number];
 export type Direction = 0 | 1 | 2 | 3;
-export type ProcessCode = "nigiru" | "kiru" | "uru" | "yaku";
+export type ProcessCode = "nigiru" | "kiru" | "uru" | "yaku" | "taberu";
 
 export type SObjMoveStartTask = {
   code: "moveStart";

@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import { useEffect } from "react";
-import { SUnit } from "../sushido/factory/SUnit";
-import { Direction } from "../sushido/factory/type";
+import { SUnit } from "../../sushido/factory/SUnit";
+import { Direction } from "../../sushido/factory/type";
 
 const unitCss = ({
   pos,

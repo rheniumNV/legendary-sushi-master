@@ -4,7 +4,6 @@ import { SushiUnitModels } from "../models/SUnitModels";
 import _ from "lodash";
 import { Direction, FactoryModel, Pos, SObjTask } from "./type";
 import { SUser } from "./SUser";
-import EventEmitter from "events";
 import { SushiObjModels } from "../models/SObjModels";
 
 function pos2key(pos: [number, number]) {
