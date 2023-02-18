@@ -134,9 +134,7 @@ function getRecips(
   process: {
     [key: string]: SObjProcessModel;
   } = {}
-): {
-  [key: string]: SObjModel;
-} {
+): SObjModel {
   const recipe = combineRecipe
     .filter(({ inputs }) => inputs.includes(code))
     .map(({ inputs, code: recipeCode, scale }) => {

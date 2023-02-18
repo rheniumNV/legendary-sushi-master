@@ -4,11 +4,12 @@ import { WebSocketServer } from "ws";
 import http from "http";
 import express from "express";
 import json2emap from "json2emap";
-import _, { identity } from "lodash";
+import _ from "lodash";
 import { SUnit } from "../sushido/SUnit";
 import { SObj } from "../sushido/SObj";
 import { Pos } from "../sushido/type";
 import EventEmitter from "events";
+import { SushiNeosObjectManager } from "./SushiNeosObjectManager";
 
 const app = express();
 const server = http.createServer(app);
@@ -100,13 +101,13 @@ function getUpdate(sm: NeosSyncManager, gm: GameManager) {
 
 wss.on("connection", (ws, request) => {
   console.log("on Websocket Connection");
-  const sm = new NeosSyncManager();
+  const som = new SushiNeosObjectManager();
   ws.send(json2emap({ type: "clean" }));
   let updateDone = true;
 
   events.on("updated", () => {
     if (updateDone) {
-      const tasks = getUpdate(sm, gm);
+      const tasks = som.getUpdate(gm);
       ws.send(json2emap({ type: "update", tasks }));
       updateDone = false;
     }
@@ -145,7 +146,7 @@ wss.on("connection", (ws, request) => {
         case "reset":
           gm = new GameManager(data.option);
         case "resync":
-          sm.initialize();
+          som.initialize();
           ws.send(json2emap({ type: "clean" }));
           break;
         case "updateFinish":
@@ -157,7 +158,7 @@ wss.on("connection", (ws, request) => {
             console.log(data.option);
             gm.emitGameEvent(data.option);
             gm.fm.clean();
-            const tasks = getUpdate(sm, gm);
+            const tasks = som.getUpdate(gm);
             ws.send(json2emap({ type: "update", tasks }));
             console.log("sended");
             updateDone = false;

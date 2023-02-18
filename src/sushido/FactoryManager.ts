@@ -157,6 +157,7 @@ export class FactoryManager {
     if (user && obj) {
       user.grabObj(obj);
     }
+    this.clean();
   }
 
   releaseObj(userId: string, targetUnitId: string) {
@@ -165,6 +166,7 @@ export class FactoryManager {
     if (user && unit) {
       user.releaseObj(unit);
     }
+    this.clean();
   }
 
   startInteractUnit(userId: string, targetUnitId: string) {

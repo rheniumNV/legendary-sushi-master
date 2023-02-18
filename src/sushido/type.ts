@@ -57,7 +57,7 @@ export type SUnitOptions = {
   };
 };
 
-export type SObjModel = {
+export type SObjOptions = {
   code: string;
   process: {
     [key: string]: {
@@ -68,4 +68,17 @@ export type SObjModel = {
     };
   };
   recipe: { [key: string]: { code: string; scale: number } };
+};
+
+export type SUnitModel = {
+  [key: string]: SUnitOptions;
+};
+
+export type SObjModel = {
+  [key: string]: SObjOptions;
+};
+
+export type FactoryModel = {
+  unitModel: SUnitModel;
+  objModel: SObjModel;
 };
