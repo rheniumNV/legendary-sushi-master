@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { SObjModel } from "../type";
 
 export const combineRecipe = [
   {
@@ -134,20 +135,9 @@ function getRecips(
     [key: string]: SObjProcessModel;
   } = {}
 ): {
-  [key: string]: {
-    code: string;
-    process: {
-      [key: string]: {
-        output:
-          | { type: "transform"; code: string }
-          | { type: "coin"; value: number };
-        scale: number;
-      };
-    };
-    recipe: { [key: string]: { code: string; scale: number } };
-  };
+  [key: string]: SObjModel;
 } {
-  const recepe = combineRecipe
+  const recipe = combineRecipe
     .filter(({ inputs }) => inputs.includes(code))
     .map(({ inputs, code: recipeCode, scale }) => {
       const ii = inputs.filter((c) => c !== code);
@@ -166,7 +156,7 @@ function getRecips(
       code,
       process,
       recipe: _.reduce(
-        recepe,
+        recipe,
         (curr, { input, code, scale }: any) => ({
           ...curr,
           ...(input ? { [input]: { code, scale } } : {}),

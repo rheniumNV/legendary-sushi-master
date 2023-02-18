@@ -1,5 +1,5 @@
 import { NeosObj, NeosSyncManager, Task } from "./NeosSyncManager";
-import { GameManager } from "../sushido/GameManager";
+import { GameManager } from "../sushido";
 import { WebSocketServer } from "ws";
 import http from "http";
 import express from "express";
@@ -70,7 +70,7 @@ function obj2NeosObj(obj: SObj): NeosObj {
 
 function getUpdate(sm: NeosSyncManager, gm: GameManager) {
   const unitObjs = _.reduce(
-    gm.sUnitArray,
+    gm.fm.sUnitArray,
     (prev, curr) => ({
       ...prev,
       [curr.id]: unit2NeosObj(curr),
@@ -79,7 +79,7 @@ function getUpdate(sm: NeosSyncManager, gm: GameManager) {
   );
 
   const objObjs = _.reduce(
-    gm.sObjArray,
+    gm.fm.sObjArray,
     (prev, curr) => ({
       ...prev,
       [curr.id]: obj2NeosObj(curr),
@@ -155,21 +155,8 @@ wss.on("connection", (ws, request) => {
           try {
             const { code } = data.option;
             console.log(data.option);
-            switch (code) {
-              case "grabObj":
-                gm.grabObj(data.option.userId, data.option.objId);
-                break;
-              case "releaseObj":
-                gm.releaseObj(data.option.userId, data.option.unitId);
-                break;
-              case "startInteractUnit":
-                gm.startInteractUnit(data.option.userId, data.option.unitId);
-                break;
-              case "endInteractUnit":
-                gm.endInteractUnit(data.option.userId, data.option.unitId);
-                break;
-            }
-            gm.clean();
+            gm.emitGameEvent(data.option);
+            gm.fm.clean();
             const tasks = getUpdate(sm, gm);
             ws.send(json2emap({ type: "update", tasks }));
             console.log("sended");

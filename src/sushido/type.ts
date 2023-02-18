@@ -56,3 +56,16 @@ export type SUnitOptions = {
     speed: number;
   };
 };
+
+export type SObjModel = {
+  code: string;
+  process: {
+    [key: string]: {
+      output:
+        | { type: "transform"; code: string }
+        | { type: "coin"; value: number };
+      scale: number;
+    };
+  };
+  recipe: { [key: string]: { code: string; scale: number } };
+};

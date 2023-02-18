@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { css } from "@emotion/react";
 import { SUnitView } from "./components/SUnitView";
-import { GameManager } from "./sushido/GameManager";
+import { GameManager } from "./sushido";
 import { useTimer } from "./util";
 import { SObjView } from "./components/SObjView";
-import { SObjModels } from "./sushido/models/SObjModels";
 import { SUserView } from "./components/SUserView";
 
 const appCss = css({
@@ -29,35 +28,51 @@ export function App() {
       <p>frame:{frame}</p>
       <p>coin:{gameManager.coin}</p>
       <div css={css({ position: "absolute", top: 200 })}>
-        {gameManager.sUnitArray.map((unit, i) => (
+        {gameManager.fm.sUnitArray.map((unit, i) => (
           <SUnitView
             key={i}
             sUnit={unit}
             releaseFunc={(id: string) => {
-              gameManager.releaseObj(userId, id);
+              gameManager.emitGameEvent({
+                code: "releaseObj",
+                userId,
+                unitId: id,
+              });
             }}
             startInteract={() => {
-              gameManager.startInteractUnit(userId, unit.id);
+              gameManager.emitGameEvent({
+                code: "startInteractUnit",
+                userId,
+                unitId: unit.id,
+              });
             }}
             endInteract={() => {
-              gameManager.endInteractUnit(userId, unit.id);
+              gameManager.emitGameEvent({
+                code: "endInteractUnit",
+                userId,
+                unitId: unit.id,
+              });
             }}
           />
         ))}
-        {gameManager.sUnitArray.map((unit, i) => (
+        {gameManager.fm.sUnitArray.map((unit, i) => (
           <SObjView
             key={i}
             sUnit={unit}
             getObj={(id) => {
-              return gameManager.sObjs.get(id);
+              return gameManager.fm.sObjs.get(id);
             }}
             grabFunc={(id: string) => {
-              gameManager.grabObj(userId, id);
+              gameManager.emitGameEvent({
+                code: "grabObj",
+                userId,
+                objId: id,
+              });
             }}
           />
         ))}
       </div>
-      {gameManager.sUserArray.map((user) => (
+      {gameManager.fm.sUserArray.map((user) => (
         <SUserView user={user} />
       ))}
     </div>
