@@ -18,9 +18,9 @@ export function App() {
   const userId = "U-test";
 
   useTimer(() => {
-    gameManager.update(0.02);
+    gameManager.update(0.2);
     setFrame((f) => f + 1);
-  }, 20);
+  }, 200);
 
   // console.log(gameManager, SObjModels);
 

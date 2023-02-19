@@ -50,6 +50,8 @@ export class SUnit {
     progress: number;
     speed: number;
   }[] = [];
+  eatMenuCode: string | undefined;
+  eatCallback: ((unit: SUnit) => void) | undefined;
 
   protected _factoryModel: FactoryModel;
 
@@ -260,25 +262,37 @@ export class SUnit {
     addCoin: (coin: number) => void
   ) {
     if (task.target.stacks.length > 0) {
-      const process = task.target.getProcess(task.target.stacks[0].code);
+      const stackObjCode = task.target.stacks[0].code;
+      const process = task.target.getProcess(stackObjCode);
       if (process.length > 0) {
         if (
           process[0].requireInteract &&
           task.target.interactedUsers.length === 0
         ) {
           task.target.stackProgress -=
-            task.target.stackProgress * 0.5 * deltaTime;
+            task.target.stackProgress * 0.2 * deltaTime;
         } else {
           task.target.stackProgress +=
             process[0].speed *
             deltaTime *
             (process[0].requireInteract
               ? task.target.interactedUsers.length
+              : 1) *
+            (process[0].processCode === "taberu"
+              ? task.target.eatMenuCode === task.target.stacks[0].code
+                ? 1
+                : 0
               : 1);
         }
 
         if (task.target.stackProgress >= 100) {
           task.target.stackProgress = 0;
+          if (process[0].processCode === "taberu") {
+            task.target.eatMenuCode = undefined;
+            if (task.target.eatCallback) {
+              task.target.eatCallback(task.target);
+            }
+          }
           switch (process[0].output.type) {
             case "transform":
               task.target.stacks[0].code = process[0].output.code;

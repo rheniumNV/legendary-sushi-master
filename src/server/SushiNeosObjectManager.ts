@@ -56,6 +56,8 @@ function customer2NeosObj(customer: Customer) {
     options: {
       code: { type: "string", value: customer.visualCode },
       pos: { type: "float2", value: formatPos(customer.pos) },
+      patience: { type: "float", value: customer.patience.toString() },
+      request: { type: "string", value: customer.table?.eatMenuCode ?? "" },
     },
   };
 }
@@ -104,6 +106,10 @@ export class SushiNeosObjectManager {
       ...objObjs,
       ...customerObjs,
     });
+
+    const view = tasks.filter(
+      (task) => task.type === "create" && task.targetType === "Customer"
+    );
 
     const status = {
       create: tasks.filter((v) => v.type === "create").length,

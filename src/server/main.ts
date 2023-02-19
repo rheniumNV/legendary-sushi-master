@@ -2,8 +2,12 @@ import { GameManager } from "../sushido";
 import { WebSocketServer } from "ws";
 import http from "http";
 import express from "express";
-import json2emap from "json2emap";
+import j2e from "json2emap";
 import _ from "lodash";
+
+function json2emap(data: any) {
+  return j2e(data);
+}
 
 import EventEmitter from "events";
 import { SushiNeosObjectManager } from "./SushiNeosObjectManager";

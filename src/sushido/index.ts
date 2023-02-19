@@ -88,9 +88,11 @@ const setting: { code: string; pos: [number, number]; direction: Direction }[] =
 
 export class GameManager {
   fm: FactoryManager;
-  customers: Customer[] = [new Customer("お客さんA")];
+  customers: Customer[] = [];
   coin: number = 0;
   dayCount: number = 0;
+  t: number = 0;
+  maxCustomerCount: number = 10;
 
   constructor(
     map: {
@@ -105,14 +107,34 @@ export class GameManager {
   init(gameData: GameData) {
     this.coin = gameData.coin;
     this.dayCount = gameData.dayCount;
+    this.t = 0;
   }
 
   update(deltaTime: number = 0) {
     this.fm.update(deltaTime);
 
+    const emptyTables = this.fm.sUnitArray.filter((unit) =>
+      unit.options.process?.some((process) => process.processCode === "taberu")
+    );
     this.customers.forEach((customer) => {
-      customer.pos = [customer.pos[0], (customer.pos[1] + 0.1 * deltaTime) % 5];
+      customer.update(
+        deltaTime,
+        emptyTables.filter((table) =>
+          this.customers.every((customer) => customer.table?.id !== table.id)
+        )
+      );
     });
+    this.customers = this.customers.filter((customer) => !customer.isDeleted);
+
+    if (Math.floor(this.t / 3) !== Math.floor((this.t + deltaTime) / 3)) {
+      if (
+        this.customers.length < this.maxCustomerCount &&
+        Math.random() < 0.5
+      ) {
+        this.customers.push(new Customer("test", ["マグロにぎり", "鉄火巻"]));
+      }
+    }
+    this.t += deltaTime;
   }
 
   emitGameEvent(event: GameEvent) {

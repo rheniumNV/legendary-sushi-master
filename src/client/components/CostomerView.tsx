@@ -1,8 +1,5 @@
 import { css } from "@emotion/react";
 import { Customer } from "../../sushido/Customer";
-import { SObj } from "../../sushido/factory/SObj";
-import { SUnit } from "../../sushido/factory/SUnit";
-import { Pos, SId } from "../../sushido/factory/type";
 import { posCss } from "./util";
 
 const customerCss = css({
@@ -10,7 +7,7 @@ const customerCss = css({
   height: 50,
   borderRadius: 50,
   background: "black",
-  color: "white",
+  color: "red",
   textAlign: "center",
   fontSize: 15,
   cursor: "pointer",
@@ -20,7 +17,11 @@ const customerCss = css({
 export function CustomerVisual({ customer }: { customer: Customer }) {
   return (
     <div css={customerCss}>
-      <span>お客さん</span>
+      <div>
+        <span>{customer.state}</span>
+        <span>{Math.floor(customer.progress)}</span>
+        <span>{Math.floor(customer.patience)}</span>
+      </div>
     </div>
   );
 }

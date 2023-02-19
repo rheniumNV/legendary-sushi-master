@@ -76,6 +76,7 @@ export function SUnitView({
     >
       <div>
         <span>{sUnit.options.code}</span>
+        <span>{sUnit.eatMenuCode}</span>
       </div>
       {(progress ?? 0) > 0 && (
         <div css={progressBarCss(progress ?? 0)}>

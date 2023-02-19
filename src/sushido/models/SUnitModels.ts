@@ -123,7 +123,7 @@ export const 売却機: SUnitOptions = {
 export const ダイニングテーブル: SUnitOptions = {
   code: "ダイニングテーブル",
   stack: { maxCount: 1 },
-  process: [{ processCode: "taberu", requireInteract: true, value: 14 }],
+  process: [{ processCode: "taberu", requireInteract: false, value: 7 }],
   transporter: [undefined, undefined, undefined, undefined],
 };
 
