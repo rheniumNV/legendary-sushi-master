@@ -1,8 +1,19 @@
-import { random } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 import { SUnit } from "./factory/SUnit";
 import { Pos } from "./factory/type";
 import { distancePos, normalizedPos, processPos } from "./util";
+
+export type CustomerModel = {
+  visualCode: string;
+  maxOrderCount: number;
+  nextOrderRatio: number;
+  paymentScale: number;
+  patienceScale: number;
+  eatScale: number;
+  thinkingOrderScale: number;
+  pickWeight: number;
+  moveSpeed: number;
+};
 
 export type CustomerState =
   | "WAITING_TABLE"
@@ -16,11 +27,8 @@ export type CustomerState =
 export class Customer {
   entryPos: Pos = [0, -5];
   menuCodes: string[];
-  moveSpeed: number = 1;
-  maxOrderCount: number = 3;
 
   id: string;
-  visualCode: string;
   pos: Pos = this.entryPos;
   targetPos: Pos = this.entryPos;
   table: SUnit | undefined;
@@ -28,17 +36,20 @@ export class Customer {
   patience: number = 100;
   progress: number = 0;
   orderCount: number = 0;
+  currentOrder: string | undefined;
   isDeleted: boolean = false;
+
+  customerModel: CustomerModel;
 
   _moveVec: Pos = [0, 0];
   _maxMoveTime: number = 0;
 
   constructor(
-    visualCode: string,
+    customerModel: CustomerModel,
     menuCodes: string[],
     waitingTableIndex: number
   ) {
-    this.visualCode = visualCode;
+    this.customerModel = customerModel;
     this.menuCodes = menuCodes;
     this.id = uuidv4();
     this.changeState("WAITING_TABLE");
@@ -66,8 +77,7 @@ export class Customer {
         break;
       case "WAITING_FOOD":
         if (this.table) {
-          this.table.eatMenuCode =
-            this.menuCodes[Math.floor(Math.random() * this.menuCodes.length)];
+          this.table.eatMenuCode = this.currentOrder;
         }
         break;
       case "GOING_HOME":
@@ -84,7 +94,7 @@ export class Customer {
     const diff = processPos(this.targetPos, this.pos, (a, b) => a - b);
     const abs = distancePos(diff);
 
-    const realSpeed = this.moveSpeed * deltaTime;
+    const realSpeed = this.customerModel.moveSpeed * deltaTime;
 
     if (abs < realSpeed * realSpeed) {
       this.pos = this.targetPos;
@@ -98,20 +108,20 @@ export class Customer {
   }
 
   protected patienceProcess(deltaTime: number, value: number = 1) {
-    this.patience -= value * deltaTime;
+    this.patience -= value * deltaTime * this.customerModel.patienceScale;
     if (this.patience < 0) {
       this.changeState("GOING_HOME");
     }
   }
 
   protected progressProcess(
-    nextState: CustomerState,
     deltaTime: number,
+    callback: () => void,
     value: number = 10
   ) {
     this.progress += value * deltaTime;
     if (this.progress > 100) {
-      this.changeState(nextState);
+      callback();
     }
   }
 
@@ -136,10 +146,17 @@ export class Customer {
         });
         break;
       case "THINKING_ORDER":
-        this.progressProcess("WAITING_ORDER", deltaTime, 100);
+        this.progressProcess(
+          deltaTime,
+          () => {
+            this.changeState("WAITING_ORDER");
+          },
+          100 * this.customerModel.thinkingOrderScale
+        );
         break;
-      case "WAITING_ORDER":
-        this.patienceProcess(deltaTime);
+      case "WAITING_ORDER": //いったんなしで
+        this.currentOrder =
+          this.menuCodes[Math.floor(Math.random() * this.menuCodes.length)];
         this.changeState("WAITING_FOOD");
         break;
       case "WAITING_FOOD":
@@ -149,10 +166,16 @@ export class Customer {
         }
         break;
       case "EATING_FOOD":
+        if (
+          this.table?.eatMenuCode &&
+          this.table.eatMenuCode !== this.table.stacks[0]?.code
+        ) {
+          this.changeState("WAITING_FOOD");
+        }
         if (!this.table?.eatMenuCode) {
           this.orderCount += 1;
-          if (this.orderCount < this.maxOrderCount) {
-            if (Math.random() < 0.4) {
+          if (this.orderCount < this.customerModel.maxOrderCount) {
+            if (Math.random() < this.customerModel.nextOrderRatio) {
               this.changeState("THINKING_ORDER");
             } else {
               this.changeState("GOING_HOME");

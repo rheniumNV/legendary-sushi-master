@@ -1,4 +1,4 @@
-import { Customer } from "./Customer";
+import { Customer, CustomerModel } from "./Customer";
 import { FactoryManager } from "./factory/FactoryManager";
 import { Direction, Pos, SObjModel, SUnitOptions } from "./factory/type";
 
@@ -29,16 +29,7 @@ export type GameData = {
   customerSpawnRatio: number;
   customerSpawnInterval: number;
   maxCustomerCount: number;
-  customerModel: {
-    visualCode: string;
-    maxOrderCount: number;
-    nextOrderRatio: number;
-    paymentScale: number;
-    patienceScale: number;
-    eatScale: number;
-    thinkingOrderScale: number;
-    pickWeight: number;
-  }[];
+  customerModel: CustomerModel[];
 };
 
 export type MapData = {
@@ -67,6 +58,7 @@ const defaultGame: GameData = {
       eatScale: 1,
       thinkingOrderScale: 1,
       pickWeight: 1,
+      moveSpeed: 1,
     },
     {
       visualCode: "dart",
@@ -77,6 +69,7 @@ const defaultGame: GameData = {
       eatScale: 2,
       thinkingOrderScale: 1.5,
       pickWeight: 0.5,
+      moveSpeed: 1.5,
     },
     {
       visualCode: "relax",
@@ -87,6 +80,7 @@ const defaultGame: GameData = {
       eatScale: 0.5,
       thinkingOrderScale: 0.5,
       pickWeight: 0.2,
+      moveSpeed: 0.75,
     },
   ],
 };
@@ -193,7 +187,7 @@ export class GameManager {
       ) {
         this.customers.push(
           new Customer(
-            "test",
+            this.gameData.customerModel[0],
             this.gameData.menuCodes,
             this.customers.filter(
               (customer) => customer.state === "WAITING_TABLE"

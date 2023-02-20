@@ -103,10 +103,10 @@ wss.on("connection", (ws, request) => {
               coin: 0,
               dayCount: 0,
               menuCodes: [
-                // "マグロにぎり",
-                // "鉄火巻",
+                "マグロにぎり",
+                "鉄火巻",
                 "ねぎとろ巻き",
-                // "ねぎとろ軍艦",
+                "ねぎとろ軍艦",
               ],
               dayTime: 60,
               customerSpawnRatio: 0.7,
@@ -122,6 +122,7 @@ wss.on("connection", (ws, request) => {
                   eatScale: 1,
                   thinkingOrderScale: 1,
                   pickWeight: 1,
+                  moveSpeed: 1,
                 },
                 {
                   visualCode: "dart",
@@ -132,6 +133,7 @@ wss.on("connection", (ws, request) => {
                   eatScale: 2,
                   thinkingOrderScale: 1.5,
                   pickWeight: 0.5,
+                  moveSpeed: 1.5,
                 },
                 {
                   visualCode: "relax",
@@ -142,6 +144,7 @@ wss.on("connection", (ws, request) => {
                   eatScale: 0.5,
                   thinkingOrderScale: 0.5,
                   pickWeight: 0.2,
+                  moveSpeed: 0.75,
                 },
               ],
             },

@@ -52,6 +52,7 @@ export class SUnit {
   }[] = [];
   eatMenuCode: string | undefined;
   eatCallback: ((unit: SUnit) => void) | undefined;
+  eatSpeed: number = 1;
 
   protected _factoryModel: FactoryModel;
 
@@ -283,7 +284,7 @@ export class SUnit {
               : 1) *
             (process[0].processCode === "taberu"
               ? task.target.eatMenuCode === task.target.stacks[0].code
-                ? 1
+                ? task.target.eatSpeed
                 : 0
               : 1);
         }
