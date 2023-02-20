@@ -3,6 +3,7 @@ import { FactoryManager } from "./factory/FactoryManager";
 import { Direction, Pos, SObjModel, SUnitOptions } from "./factory/type";
 
 export type GameEvent =
+  | { code: "grabUnit"; userId: string; unitId: string }
   | { code: "grabObj"; userId: string; objId: string }
   | { code: "releaseObj"; userId: string; unitId: string }
   | {
@@ -151,6 +152,7 @@ export class GameManager {
   finishTime: number = 60;
   isFinished: boolean = false;
   gameData: GameData;
+  totalCustomerCount: number = 0;
 
   constructor(gameData: GameData = defaultGame, mapData: MapData = defaultMap) {
     this.gameData = gameData;
@@ -185,6 +187,7 @@ export class GameManager {
         this.customers.length < this.gameData.maxCustomerCount &&
         Math.random() < this.gameData.customerSpawnRatio
       ) {
+        this.totalCustomerCount++;
         this.customers.push(
           new Customer(
             this.gameData.customerModel[0],
@@ -206,6 +209,9 @@ export class GameManager {
 
   emitGameEvent(event: GameEvent) {
     switch (event.code) {
+      case "grabUnit":
+        this.fm.grabUnit(event.userId, event.unitId);
+        break;
       case "grabObj":
         this.fm.grabObj(event.userId, event.objId);
         break;

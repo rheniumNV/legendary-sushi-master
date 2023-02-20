@@ -62,7 +62,6 @@ export class Customer {
   }
 
   protected changeState(newState: CustomerState) {
-    this.patience = 100;
     this.progress = 0;
     const prevState = this.state;
     this.state = newState;
@@ -75,12 +74,16 @@ export class Customer {
           this.targetPos = processPos(this.table.pos, [0, -1], (a, b) => a + b);
         }
         break;
+      case "THINKING_ORDER":
+        this.patience = 100;
+        break;
       case "WAITING_FOOD":
         if (this.table) {
           this.table.eatMenuCode = this.currentOrder;
         }
         break;
       case "GOING_HOME":
+        this.patience = 100;
         this.targetPos = this.entryPos;
         if (this.table) {
           this.table.eatMenuCode = undefined;

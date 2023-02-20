@@ -1,14 +1,21 @@
-import { GameManager } from "../sushido";
+import { GameManager, MapData } from "../sushido";
 import { WebSocketServer, WebSocket } from "ws";
 import http from "http";
 import express from "express";
 import j2e from "json2emap";
 import _ from "lodash";
 
+type NeosGameData = {
+  coin: number;
+  menuCodes: string[];
+  map: MapData;
+  playerCount: number;
+};
+
 type EventMessage4Neos =
   | { type: "update"; tasks: Task[] }
   | { type: "clean" }
-  | { type: "report" };
+  | { type: "report"; data: { todayCoin: number; totalCustomerCount: number } };
 
 type EventMessage4Manager =
   | {
@@ -76,7 +83,13 @@ wss.on("connection", (ws, request) => {
   events.on("updated", () => {
     if (updateDone && gm) {
       if (gm.isFinished) {
-        sendEvent({ type: "report" });
+        sendEvent({
+          type: "report",
+          data: {
+            todayCoin: gm.todayCoin + gm.gameData.coin,
+            totalCustomerCount: gm.totalCustomerCount,
+          },
+        });
         clearInterval(intervalId);
         ws.close();
       } else {
@@ -107,6 +120,7 @@ wss.on("connection", (ws, request) => {
                 "鉄火巻",
                 "ねぎとろ巻き",
                 "ねぎとろ軍艦",
+                "えびてんにぎり",
               ],
               dayTime: 60,
               customerSpawnRatio: 0.7,

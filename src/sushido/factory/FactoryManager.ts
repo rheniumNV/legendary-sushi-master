@@ -161,6 +161,16 @@ export class FactoryManager {
     });
   }
 
+  grabUnit(userId: string, targetUnitId: string) {
+    let user =
+      this.sUsers.get(userId) ??
+      this.sUsers.set(userId, new SUser(this, userId)).get(userId);
+    const unit = this.sUnitArray.find(({ id }) => id === targetUnitId);
+    if (user && unit) {
+      user.grabUnit(unit, (str) => this.generateObj(str));
+    }
+  }
+
   grabObj(userId: string, targetObjId: string) {
     let user =
       this.sUsers.get(userId) ??

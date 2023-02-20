@@ -53,6 +53,27 @@ export const コンベア: SUnitOptions = {
   ],
 };
 
+export const 直角コンベアL: SUnitOptions = {
+  code: "直角コンベアL",
+  stack: { maxCount: 1 },
+  transporter: [
+    { type: "input", speed: 20 },
+    undefined,
+    undefined,
+    { type: "output", speed: 20 },
+  ],
+};
+export const 直角コンベアR: SUnitOptions = {
+  code: "直角コンベアR",
+  stack: { maxCount: 1 },
+  transporter: [
+    { type: "input", speed: 20 },
+    { type: "output", speed: 20 },
+    undefined,
+    undefined,
+  ],
+};
+
 export const カウンター: SUnitOptions = {
   code: "カウンター",
   stack: { maxCount: 1 },
@@ -143,4 +164,6 @@ export const SushiUnitModels: SUnitModel = {
   コンバイナ,
   売却機,
   ダイニングテーブル,
+  直角コンベアL,
+  直角コンベアR,
 };

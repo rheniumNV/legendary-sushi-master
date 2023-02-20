@@ -13,6 +13,27 @@ export class SUser {
     this.fm = fm;
   }
 
+  grabUnit(unit: SUnit, generateObj: (objCode: string) => SObj) {
+    if (unit.options.generation) {
+      if (this.grabObjects.length === 0) {
+        this.grabObjects.push(generateObj(unit.options.generation.objCode));
+      } else if (this.grabObjects.length === 1) {
+        const combinedObjCode = _.get(this.fm.factoryModel.objModel, [
+          unit.options.generation.objCode,
+          "recipe",
+          this.grabObjects[0]?.code ?? "",
+          "code",
+        ]);
+        if (combinedObjCode) {
+          this.grabObjects[0].code = combinedObjCode;
+        }
+      }
+    }
+  }
+
+  //握るときになにかリセットしてない。
+  //食べ物を取り上げたときに忍耐をリセットしないようにする。
+
   grabObj(obj: SObj) {
     const combinedObjCode = _.get(this.fm.factoryModel.objModel, [
       obj.code,
@@ -31,6 +52,9 @@ export class SUser {
         obj._parentUnit.inputs = obj._parentUnit.inputs.filter(
           ({ sObj }: any) => sObj !== obj
         );
+      }
+      if (obj._parentUnit) {
+        obj._parentUnit.combineCount = 0;
       }
       if (this.grabObjects[0] && combinedObjCode) {
         this.grabObjects[0].code = combinedObjCode;
@@ -54,6 +78,8 @@ export class SUser {
     } else if (to.stacks.length === 1 && combinedObjCode) {
       this.grabObjects.pop();
       to.stacks[0].code = combinedObjCode;
+    } else if (obj && to.options.generation?.objCode === obj.code) {
+      this.grabObjects.pop();
     }
   }
 }
