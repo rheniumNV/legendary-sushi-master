@@ -201,12 +201,12 @@ export class SUnit {
     ) {
       const diffDirection = getDirection(to.pos, from.pos);
       if (diffDirection !== undefined) {
-        const fromTrnasporter = _.get(
+        const fromTransporter = _.get(
           from.options.transporter,
           (diffDirection + 4 - from.direction) % 4
         );
         const fromOutput =
-          fromTrnasporter?.type === "output" ? fromTrnasporter : undefined;
+          fromTransporter?.type === "output" ? fromTransporter : undefined;
 
         const toTransporter = _.get(
           to.options.transporter,
@@ -272,6 +272,9 @@ export class SUnit {
           task.target.stackProgress -=
             task.target.stackProgress * 0.2 * deltaTime;
         } else {
+          if (process[0].processCode === "taberu") {
+            console.log("taberu");
+          }
           task.target.stackProgress +=
             process[0].speed *
             deltaTime *

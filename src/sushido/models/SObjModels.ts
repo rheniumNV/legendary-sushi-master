@@ -110,6 +110,7 @@ export const SushiObjModels = {
   ...getRecips("のりすめし"),
   ...getRecips("ねぎとろ巻き", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),
   ...getRecips("鉄火巻", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },

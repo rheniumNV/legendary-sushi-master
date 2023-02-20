@@ -22,12 +22,12 @@ export function App() {
     setFrame((f) => f + 1);
   }, 200);
 
-  // console.log(gameManager, SObjModels);
+  console.log(gameManager);
 
   return (
     <div css={appCss}>
       <p>frame:{frame}</p>
-      <p>coin:{gameManager.coin}</p>
+      <p>coin:{gameManager.todayCoin}</p>
       <div css={css({ position: "absolute", top: 200 })}>
         {gameManager.fm.sUnitArray.map((unit, i) => (
           <SUnitView
