@@ -4,18 +4,39 @@ import http from "http";
 import express from "express";
 import j2e from "json2emap";
 import _ from "lodash";
+import EventEmitter from "events";
+import { SushiNeosObjectManager } from "./SushiNeosObjectManager";
+import { Task } from "./NeosSyncManager";
+import { Direction, Pos } from "../sushido/factory/type";
 
 type NeosGameData = {
-  coin: number;
-  menuCodes: string[];
-  map: MapData;
-  playerCount: number;
+  gameState: {
+    coin: number;
+    day: number;
+    value: number;
+    menuCodes: string[];
+    lostCount: number;
+    totalCustomerCount: number;
+    verticalLevel: number;
+    horizontalLevel: number;
+  };
+  unitList: { id: string; code: string }[];
+  mapData: { id: string; pos: Pos; direction: Direction }[];
+};
+
+type NextGameData = {
+  newMenuCodes: string[];
+};
+
+type ReportGameData = {
+  todayCoin: number;
+  totalCustomerCount: number;
 };
 
 type EventMessage4Neos =
   | { type: "update"; tasks: Task[] }
   | { type: "clean" }
-  | { type: "report"; data: { todayCoin: number; totalCustomerCount: number } };
+  | { type: "report"; data: ReportGameData };
 
 type EventMessage4Manager =
   | {
@@ -48,10 +69,6 @@ function generateEventSender(ws: WebSocket) {
     ws.send(json2emap(data));
   };
 }
-
-import EventEmitter from "events";
-import { SushiNeosObjectManager } from "./SushiNeosObjectManager";
-import { Task } from "./NeosSyncManager";
 
 const app = express();
 const server = http.createServer(app);
