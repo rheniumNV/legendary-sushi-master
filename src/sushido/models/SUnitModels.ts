@@ -42,6 +42,12 @@ export const すめし箱: SUnitOptions = {
   generation: { objCode: "すめし" },
 };
 
+export const 瓶箱: SUnitOptions = {
+  code: "瓶箱",
+  stack: { maxCount: 0 },
+  generation: { objCode: "瓶" },
+};
+
 export const コンベア: SUnitOptions = {
   code: "コンベア",
   stack: { maxCount: 1 },
@@ -156,6 +162,7 @@ export const SushiUnitModels: SUnitModel = {
   なまたまご箱,
   のり箱,
   すめし箱,
+  瓶箱,
   コンベア,
   カウンター,
   コンロ,

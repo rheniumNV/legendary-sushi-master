@@ -58,13 +58,28 @@ export const combineRecipe = [
     scale: 1,
   },
   {
-    inputs: ["えび", "てんぷらこ"],
-    code: "えびてんぷらこ",
+    inputs: ["ときたまご", "てんぷらこ"],
+    code: "てんぷらこときたまご",
+    scale: 1,
+  },
+  {
+    inputs: ["てんぷらこときたまご", "えび"],
+    code: "えびてんぷらこときたまご",
     scale: 1,
   },
   {
     inputs: ["えびてん", "シャリ"],
     code: "えびてんにぎり",
+    scale: 1,
+  },
+  {
+    inputs: ["瓶", "ときたまご"],
+    code: "ときたまご入りの瓶",
+    scale: 1,
+  },
+  {
+    inputs: ["ときたまご入りの瓶", "えび"],
+    code: "えびとときたまご入りの瓶",
     scale: 1,
   },
 ];
@@ -118,14 +133,28 @@ export const SushiObjModels = {
   }),
   ...getRecips("えび"),
   ...getRecips("てんぷらこ"),
-  ...getRecips("えびてんぷらこ", {
+  ...getRecips("てんぷらこときたまご"),
+  ...getRecips("えびてんぷらこときたまご", {
     yaku: { output: { type: "transform", code: "えびてん" }, scale: 1 },
   }),
-  ...getRecips("えびてん"),
+  ...getRecips("えびてん", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+  }),
   ...getRecips("えびにぎり", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),
   ...getRecips("えびてんにぎり", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+  }),
+  ...getRecips("瓶"),
+  ...getRecips("ときたまご入りの瓶"),
+  ...getRecips("えびとときたまご入りの瓶", {
+    yaku: { output: { type: "transform", code: "茶碗蒸し" }, scale: 6 },
+  }),
+  ...getRecips("茶碗蒸し", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
     taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),
