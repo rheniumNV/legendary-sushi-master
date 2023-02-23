@@ -273,9 +273,6 @@ export class SUnit {
           task.target.stackProgress -=
             task.target.stackProgress * 0.2 * deltaTime;
         } else {
-          if (process[0].processCode === "taberu") {
-            console.log("taberu");
-          }
           task.target.stackProgress +=
             process[0].speed *
             deltaTime *

@@ -3,7 +3,7 @@ import { SUnit } from "./SUnit";
 import { SushiUnitModels } from "../models/SUnitModels";
 import _ from "lodash";
 import { Direction, FactoryModel, Pos, SObjTask } from "./type";
-import { SUser } from "./SUser";
+import { HandSide, SUser } from "./SUser";
 import { SushiObjModels } from "../models/SObjModels";
 
 function pos2key(pos: [number, number]) {
@@ -115,7 +115,9 @@ export class FactoryManager {
         .flatMap((v) => v),
       ...this.sUserArray
         .map((user) => {
-          return user.grabObjects.map((obj) => ({ id: obj.id, user: user }));
+          return [...user.rightGrabObjects, ...user.leftGrabObjects].map(
+            (obj) => ({ id: obj.id, user: user })
+          );
         })
         .flatMap((v) => v),
     ];
@@ -161,33 +163,33 @@ export class FactoryManager {
     });
   }
 
-  grabUnit(userId: string, targetUnitId: string) {
+  grabUnit(side: HandSide, userId: string, targetUnitId: string) {
     let user =
       this.sUsers.get(userId) ??
       this.sUsers.set(userId, new SUser(this, userId)).get(userId);
     const unit = this.sUnitArray.find(({ id }) => id === targetUnitId);
     if (user && unit) {
-      user.grabUnit(unit, (str) => this.generateObj(str));
+      user.grabUnit(side, unit, (str) => this.generateObj(str));
     }
   }
 
-  grabObj(userId: string, targetObjId: string) {
+  grabObj(side: HandSide, userId: string, targetObjId: string) {
     let user =
       this.sUsers.get(userId) ??
       this.sUsers.set(userId, new SUser(this, userId)).get(userId);
     const obj = this.sObjs.get(targetObjId);
     console.log(user, obj);
     if (user && obj) {
-      user.grabObj(obj);
+      user.grabObj(side, obj);
     }
     this.clean();
   }
 
-  releaseObj(userId: string, targetUnitId: string) {
+  releaseObj(side: HandSide, userId: string, targetUnitId: string) {
     const user = this.sUsers.get(userId);
     const unit = this.sUnitArray.find(({ id }) => id === targetUnitId);
     if (user && unit) {
-      user.releaseObj(unit);
+      user.releaseObj(side, unit);
     }
     this.clean();
   }

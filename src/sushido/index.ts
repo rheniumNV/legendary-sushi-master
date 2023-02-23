@@ -210,13 +210,13 @@ export class GameManager {
   emitGameEvent(event: GameEvent) {
     switch (event.code) {
       case "grabUnit":
-        this.fm.grabUnit(event.userId, event.unitId);
+        this.fm.grabUnit("RIGHT", event.userId, event.unitId);
         break;
       case "grabObj":
-        this.fm.grabObj(event.userId, event.objId);
+        this.fm.grabObj("RIGHT", event.userId, event.objId);
         break;
       case "releaseObj":
-        this.fm.releaseObj(event.userId, event.unitId);
+        this.fm.releaseObj("RIGHT", event.userId, event.unitId);
         break;
       case "startInteractUnit":
         this.fm.startInteractUnit(event.userId, event.unitId);

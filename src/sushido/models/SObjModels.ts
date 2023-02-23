@@ -82,6 +82,26 @@ export const combineRecipe = [
     code: "えびとときたまご入りの瓶",
     scale: 1,
   },
+  {
+    inputs: ["えび", "マヨネーズ"],
+    code: "えびマヨ",
+    scale: 1,
+  },
+  {
+    inputs: ["えびマヨ", "軍艦シャリ"],
+    code: "えびマヨ軍艦",
+    scale: 1,
+  },
+  {
+    inputs: ["アボカド", "サーモン"],
+    code: "アボカドサーモン",
+    scale: 1,
+  },
+  {
+    inputs: ["アボカドサーモン", "のりすめし"],
+    code: "カリフォルニアロール",
+    scale: 1,
+  },
 ];
 
 export const SushiObjModels = {
@@ -90,7 +110,7 @@ export const SushiObjModels = {
   }),
   ...getRecips("サーモン"),
   ...getRecips("すめし", {
-    nigiru: { output: { type: "transform", code: "シャリ" }, scale: 3 },
+    nigiru: { output: { type: "transform", code: "シャリ" }, scale: 1.5 },
   }),
   ...getRecips("シャリ"),
   ...getRecips("マグロにぎり", {
@@ -100,14 +120,24 @@ export const SushiObjModels = {
   ...getRecips("サーモンにぎり", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
     taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+    yaku: {
+      output: { type: "transform", code: "あぶりサーモンにぎり" },
+      scale: 10,
+    },
+  }),
+  ...getRecips("あぶりサーモンにぎり", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),
   ...getRecips("なまたまご", {
-    kiru: { output: { type: "transform", code: "ときたまご" }, scale: 3 },
+    nigiru: { output: { type: "transform", code: "ときたまご" }, scale: 6 },
     yaku: { output: { type: "transform", code: "めだまやき" }, scale: 3 },
   }),
   ...getRecips("ときたまご", {
     yaku: { output: { type: "transform", code: "たまごやき" }, scale: 3 },
+    kiru: { output: { type: "transform", code: "マヨネーズ" }, scale: 0.5 },
   }),
+  ...getRecips("マヨネーズ"),
   ...getRecips("たまごやき"),
   ...getRecips("たまごシャリ"),
   ...getRecips("たまごにぎり", {
@@ -135,7 +165,7 @@ export const SushiObjModels = {
   ...getRecips("てんぷらこ"),
   ...getRecips("てんぷらこときたまご"),
   ...getRecips("えびてんぷらこときたまご", {
-    yaku: { output: { type: "transform", code: "えびてん" }, scale: 1 },
+    yaku: { output: { type: "transform", code: "えびてん" }, scale: 0.5 },
   }),
   ...getRecips("えびてん", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
@@ -152,9 +182,19 @@ export const SushiObjModels = {
   ...getRecips("瓶"),
   ...getRecips("ときたまご入りの瓶"),
   ...getRecips("えびとときたまご入りの瓶", {
-    yaku: { output: { type: "transform", code: "茶碗蒸し" }, scale: 6 },
+    yaku: { output: { type: "transform", code: "茶碗蒸し" }, scale: 0.3 },
   }),
   ...getRecips("茶碗蒸し", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+  }),
+  ...getRecips("えびマヨ"),
+  ...getRecips("えびマヨ軍艦", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+  }),
+  ...getRecips("アボカドサーモン"),
+  ...getRecips("カリフォルニアロール", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
     taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),

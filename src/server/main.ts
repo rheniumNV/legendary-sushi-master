@@ -1,4 +1,4 @@
-import { GameManager, MapData } from "../sushido";
+import { GameData, GameManager, MapData } from "../sushido";
 import { WebSocketServer, WebSocket } from "ws";
 import http from "http";
 import express from "express";
@@ -7,36 +7,20 @@ import _ from "lodash";
 import EventEmitter from "events";
 import { SushiNeosObjectManager } from "./SushiNeosObjectManager";
 import { Task } from "./NeosSyncManager";
-import { Direction, Pos } from "../sushido/factory/type";
-
-type NeosGameData = {
-  gameState: {
-    coin: number;
-    day: number;
-    value: number;
-    menuCodes: string[];
-    lostCount: number;
-    totalCustomerCount: number;
-    verticalLevel: number;
-    horizontalLevel: number;
-  };
-  unitList: { id: string; code: string }[];
-  mapData: { id: string; pos: Pos; direction: Direction }[];
-};
-
-type NextGameData = {
-  newMenuCodes: string[];
-};
-
-type ReportGameData = {
-  todayCoin: number;
-  totalCustomerCount: number;
-};
+import {
+  NeosGameData,
+  newGame,
+  newNeosGameData,
+  nextGameData,
+  reportGame,
+  ReportGameData,
+} from "./GameController";
 
 type EventMessage4Neos =
   | { type: "update"; tasks: Task[] }
   | { type: "clean" }
-  | { type: "report"; data: ReportGameData };
+  | { type: "report"; data: ReportGameData }
+  | { type: "updateGameData"; data: string };
 
 type EventMessage4Manager =
   | {
@@ -74,8 +58,11 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-app.get("/", (req, res) => {
-  res.send("Hello");
+app.get("/initNeosData", (req, res) => {
+  const { useEmap = false } = req.query;
+  res.send(
+    useEmap === "true" ? json2emap(newNeosGameData()) : newNeosGameData()
+  );
 });
 
 wss.on("connection", (ws, request) => {
@@ -84,6 +71,7 @@ wss.on("connection", (ws, request) => {
   const sendEvent = generateEventSender(ws);
   const events = new EventEmitter();
   let gm: undefined | GameManager;
+  let gameData: undefined | NeosGameData;
   const som = new SushiNeosObjectManager();
 
   const intervalId = setInterval(() => {
@@ -100,12 +88,16 @@ wss.on("connection", (ws, request) => {
   events.on("updated", () => {
     if (updateDone && gm) {
       if (gm.isFinished) {
+        if (gameData) {
+          const next = nextGameData(gm, gameData);
+          sendEvent({
+            type: "updateGameData",
+            data: json2emap(next),
+          });
+        }
         sendEvent({
           type: "report",
-          data: {
-            todayCoin: gm.todayCoin + gm.gameData.coin,
-            totalCustomerCount: gm.totalCustomerCount,
-          },
+          data: reportGame(gm),
         });
         clearInterval(intervalId);
         ws.close();
@@ -120,7 +112,8 @@ wss.on("connection", (ws, request) => {
   ws.on("message", (rawData) => {
     let data: undefined | EventMessage4Manager;
     try {
-      data = JSON.parse(rawData.toString());
+      const str = rawData.toString();
+      data = JSON.parse(str);
     } catch (e) {
       console.error(e);
     }
@@ -128,68 +121,8 @@ wss.on("connection", (ws, request) => {
       console.log("received", data.type);
       switch (data.type) {
         case "init":
-          gm = new GameManager(
-            {
-              coin: 0,
-              dayCount: 0,
-              menuCodes: [
-                "マグロにぎり",
-                "鉄火巻",
-                "ねぎとろ巻き",
-                "ねぎとろ軍艦",
-                "えびてんにぎり",
-              ],
-              dayTime: 60,
-              customerSpawnRatio: 0.7,
-              customerSpawnInterval: 1,
-              maxCustomerCount: 10,
-              customerModel: [
-                {
-                  visualCode: "normal",
-                  maxOrderCount: 3,
-                  nextOrderRatio: 0.8,
-                  paymentScale: 1,
-                  patienceScale: 1,
-                  eatScale: 1,
-                  thinkingOrderScale: 1,
-                  pickWeight: 1,
-                  moveSpeed: 1,
-                },
-                {
-                  visualCode: "dart",
-                  maxOrderCount: 2,
-                  nextOrderRatio: 0.75,
-                  paymentScale: 0.5,
-                  patienceScale: 1,
-                  eatScale: 2,
-                  thinkingOrderScale: 1.5,
-                  pickWeight: 0.5,
-                  moveSpeed: 1.5,
-                },
-                {
-                  visualCode: "relax",
-                  maxOrderCount: 5,
-                  nextOrderRatio: 0.9,
-                  paymentScale: 1.5,
-                  patienceScale: 2,
-                  eatScale: 0.5,
-                  thinkingOrderScale: 0.5,
-                  pickWeight: 0.2,
-                  moveSpeed: 0.75,
-                },
-              ],
-            },
-            [
-              ...data.option,
-              { code: "ダイニングテーブル", pos: [0, -1], direction: 2 },
-              { code: "ダイニングテーブル", pos: [1, -1], direction: 2 },
-              { code: "ダイニングテーブル", pos: [2, -1], direction: 2 },
-              { code: "ダイニングテーブル", pos: [3, -1], direction: 2 },
-              { code: "ダイニングテーブル", pos: [4, -1], direction: 2 },
-              { code: "ダイニングテーブル", pos: [5, -1], direction: 2 },
-              { code: "ダイニングテーブル", pos: [6, -1], direction: 2 },
-            ]
-          );
+          gm = newGame(data.option);
+          gameData = data.option;
         case "resync":
           som.initialize();
           sendEvent({ type: "clean" });
@@ -220,6 +153,9 @@ wss.on("connection", (ws, request) => {
           break;
       }
     }
+  });
+  ws.on("close", () => {
+    clearInterval(intervalId);
   });
 });
 // @ts-ignore
