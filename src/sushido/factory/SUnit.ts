@@ -52,6 +52,9 @@ export class SUnit {
   }[] = [];
   eatMenuCode: string | undefined;
   eatCallback: ((unit: SUnit) => void) | undefined;
+  eatSpeed: number = 1;
+
+  inputCounts: Map<string, number> = new Map<string, number>();
 
   protected _factoryModel: FactoryModel;
 
@@ -161,6 +164,11 @@ export class SUnit {
           from: task.from,
         });
         task.from.stacks.pop();
+
+        //コンベア分岐時の順番用
+        const inputCount = task.to.inputCounts.get(task.from.id);
+        task.to.inputCounts.set(task.from.id, (inputCount ?? 0) + 1);
+        console.log("hello");
       }
     } else if (
       task.from.options.generation &&
@@ -173,6 +181,11 @@ export class SUnit {
         progress: 0,
         from: task.from,
       });
+
+      //コンベア分岐時の順番用
+      const inputCount = task.to.inputCounts.get(task.from.id);
+      task.to.inputCounts.set(task.from.id, (inputCount ?? 0) + 1);
+      console.log("hello");
     }
   }
 
@@ -194,19 +207,19 @@ export class SUnit {
     const fromCombine = target ? from.getCombineRecipe(target.code) : {};
 
     if (
-      !fromProcess.some((v) => v) && //移動元で処理するものはない
+      !fromProcess.some((p) => !p.requireInteract) && //移動元で処理するものはない
       (Object.keys(fromCombine).length === 0 ||
         from.combineCount >= (from.options.combiner?.count ?? 0)) && //移動元でコンバインするものはない
       to.isMoreStackable(target?.code ?? from.options.generation?.objCode ?? "") //移動先のスタック数に余裕はある
     ) {
       const diffDirection = getDirection(to.pos, from.pos);
       if (diffDirection !== undefined) {
-        const fromTrnasporter = _.get(
+        const fromTransporter = _.get(
           from.options.transporter,
           (diffDirection + 4 - from.direction) % 4
         );
         const fromOutput =
-          fromTrnasporter?.type === "output" ? fromTrnasporter : undefined;
+          fromTransporter?.type === "output" ? fromTransporter : undefined;
 
         const toTransporter = _.get(
           to.options.transporter,
@@ -259,7 +272,7 @@ export class SUnit {
     task: SObjProcessTask,
     deltaTime: number,
     deleteObj: (sObj: SObj) => void,
-    addCoin: (coin: number) => void
+    addCoin: (coin: number, category: string) => void
   ) {
     if (task.target.stacks.length > 0) {
       const stackObjCode = task.target.stacks[0].code;
@@ -280,7 +293,7 @@ export class SUnit {
               : 1) *
             (process[0].processCode === "taberu"
               ? task.target.eatMenuCode === task.target.stacks[0].code
-                ? 1
+                ? task.target.eatSpeed
                 : 0
               : 1);
         }
@@ -298,7 +311,10 @@ export class SUnit {
               task.target.stacks[0].code = process[0].output.code;
               break;
             case "coin":
-              addCoin(process[0].output.value);
+              addCoin(
+                process[0].output.value,
+                process[0].processCode === "taberu" ? "eat" : "sale"
+              );
               deleteObj(task.target.stacks[0]);
               task.target.stacks.pop();
               break;
@@ -366,7 +382,7 @@ export class SUnit {
     operator: {
       generateObj: (code: string) => SObj;
       deleteObj: (sObj: SObj) => void;
-      addCoin: (coin: number) => void;
+      addCoin: (coin: number, category: string) => void;
     }
   ) {
     switch (task.code) {

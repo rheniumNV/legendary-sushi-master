@@ -54,10 +54,18 @@ function customer2NeosObj(customer: Customer) {
     id: customer.id,
     type: "Customer",
     options: {
-      code: { type: "string", value: customer.visualCode },
+      code: { type: "string", value: customer.customerModel.visualCode },
       pos: { type: "float2", value: formatPos(customer.pos) },
       patience: { type: "float", value: customer.patience.toString() },
       request: { type: "string", value: customer.table?.eatMenuCode ?? "" },
+      speed: {
+        type: "float2",
+        value: customer._moveVec ? formatPos(customer._moveVec) : "-",
+      },
+      maxMoveTime: {
+        type: "float",
+        value: customer._maxMoveTime.toString(),
+      },
     },
   };
 }

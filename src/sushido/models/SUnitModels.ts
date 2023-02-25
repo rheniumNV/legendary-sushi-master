@@ -42,6 +42,12 @@ export const すめし箱: SUnitOptions = {
   generation: { objCode: "すめし" },
 };
 
+export const 瓶箱: SUnitOptions = {
+  code: "瓶箱",
+  stack: { maxCount: 0 },
+  generation: { objCode: "瓶" },
+};
+
 export const コンベア: SUnitOptions = {
   code: "コンベア",
   stack: { maxCount: 1 },
@@ -49,6 +55,27 @@ export const コンベア: SUnitOptions = {
     { type: "input", speed: 20 },
     undefined,
     { type: "output", speed: 20 },
+    undefined,
+  ],
+};
+
+export const 直角コンベアL: SUnitOptions = {
+  code: "直角コンベアL",
+  stack: { maxCount: 1 },
+  transporter: [
+    { type: "input", speed: 20 },
+    undefined,
+    undefined,
+    { type: "output", speed: 20 },
+  ],
+};
+export const 直角コンベアR: SUnitOptions = {
+  code: "直角コンベアR",
+  stack: { maxCount: 1 },
+  transporter: [
+    { type: "input", speed: 20 },
+    { type: "output", speed: 20 },
+    undefined,
     undefined,
   ],
 };
@@ -89,7 +116,7 @@ export const 自動にぎるくん: SUnitOptions = {
     {
       processCode: "nigiru",
       requireInteract: false,
-      value: 20,
+      value: 30,
     },
   ],
 };
@@ -101,7 +128,7 @@ export const ミキサー: SUnitOptions = {
     {
       processCode: "kiru",
       requireInteract: false,
-      value: 20,
+      value: 30,
     },
   ],
 };
@@ -135,6 +162,7 @@ export const SushiUnitModels: SUnitModel = {
   なまたまご箱,
   のり箱,
   すめし箱,
+  瓶箱,
   コンベア,
   カウンター,
   コンロ,
@@ -143,4 +171,6 @@ export const SushiUnitModels: SUnitModel = {
   コンバイナ,
   売却機,
   ダイニングテーブル,
+  直角コンベアL,
+  直角コンベアR,
 };

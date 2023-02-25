@@ -58,8 +58,13 @@ export const combineRecipe = [
     scale: 1,
   },
   {
-    inputs: ["えび", "てんぷらこ"],
-    code: "えびてんぷらこ",
+    inputs: ["ときたまご", "てんぷらこ"],
+    code: "てんぷらこときたまご",
+    scale: 1,
+  },
+  {
+    inputs: ["てんぷらこときたまご", "えび"],
+    code: "えびてんぷらこときたまご",
     scale: 1,
   },
   {
@@ -67,15 +72,56 @@ export const combineRecipe = [
     code: "えびてんにぎり",
     scale: 1,
   },
+  {
+    inputs: ["瓶", "ときたまご"],
+    code: "ときたまご入りの瓶",
+    scale: 1,
+  },
+  {
+    inputs: ["ときたまご入りの瓶", "えび"],
+    code: "えびとときたまご入りの瓶",
+    scale: 1,
+  },
+  {
+    inputs: ["えび", "マヨネーズ"],
+    code: "えびマヨ",
+    scale: 1,
+  },
+  {
+    inputs: ["えびマヨ", "軍艦シャリ"],
+    code: "えびマヨ軍艦",
+    scale: 1,
+  },
+  {
+    inputs: ["ツナ", "マヨネーズ"],
+    code: "ツナマヨ",
+    scale: 1,
+  },
+  {
+    inputs: ["ツナマヨ", "軍艦シャリ"],
+    code: "ツナマヨ軍艦",
+    scale: 1,
+  },
+  {
+    inputs: ["アボカド", "サーモン"],
+    code: "アボカドサーモン",
+    scale: 1,
+  },
+  {
+    inputs: ["アボカドサーモン", "のりすめし"],
+    code: "カリフォルニアロール",
+    scale: 1,
+  },
 ];
 
 export const SushiObjModels = {
   ...getRecips("マグロ", {
     kiru: { output: { type: "transform", code: "ねぎとろ" }, scale: 1 },
+    yaru: { output: { type: "transform", code: "ツナ" }, scale: 1 },
   }),
   ...getRecips("サーモン"),
   ...getRecips("すめし", {
-    nigiru: { output: { type: "transform", code: "シャリ" }, scale: 3 },
+    nigiru: { output: { type: "transform", code: "シャリ" }, scale: 1.5 },
   }),
   ...getRecips("シャリ"),
   ...getRecips("マグロにぎり", {
@@ -85,21 +131,29 @@ export const SushiObjModels = {
   ...getRecips("サーモンにぎり", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
     taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+    yaku: {
+      output: { type: "transform", code: "あぶりサーモンにぎり" },
+      scale: 10,
+    },
+  }),
+  ...getRecips("あぶりサーモンにぎり", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),
   ...getRecips("なまたまご", {
-    kiru: { output: { type: "transform", code: "ときたまご" }, scale: 3 },
-    yaku: { output: { type: "transform", code: "めだまやき" }, scale: 3 },
+    nigiru: { output: { type: "transform", code: "ときたまご" }, scale: 6 },
   }),
   ...getRecips("ときたまご", {
     yaku: { output: { type: "transform", code: "たまごやき" }, scale: 3 },
+    kiru: { output: { type: "transform", code: "マヨネーズ" }, scale: 0.5 },
   }),
+  ...getRecips("マヨネーズ"),
   ...getRecips("たまごやき"),
   ...getRecips("たまごシャリ"),
   ...getRecips("たまごにぎり", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
     taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),
-  ...getRecips("めだまやき"),
   ...getRecips("ねぎとろ"),
   ...getRecips("のり"),
   ...getRecips("軍艦シャリ"),
@@ -110,6 +164,7 @@ export const SushiObjModels = {
   ...getRecips("のりすめし"),
   ...getRecips("ねぎとろ巻き", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),
   ...getRecips("鉄火巻", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
@@ -117,14 +172,44 @@ export const SushiObjModels = {
   }),
   ...getRecips("えび"),
   ...getRecips("てんぷらこ"),
-  ...getRecips("えびてんぷらこ", {
-    yaku: { output: { type: "transform", code: "えびてん" }, scale: 1 },
+  ...getRecips("てんぷらこときたまご"),
+  ...getRecips("えびてんぷらこときたまご", {
+    yaku: { output: { type: "transform", code: "えびてん" }, scale: 0.5 },
   }),
-  ...getRecips("えびてん"),
+  ...getRecips("えびてん", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+  }),
   ...getRecips("えびにぎり", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),
   ...getRecips("えびてんにぎり", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+  }),
+  ...getRecips("瓶"),
+  ...getRecips("ときたまご入りの瓶"),
+  ...getRecips("えびとときたまご入りの瓶", {
+    yaku: { output: { type: "transform", code: "茶碗蒸し" }, scale: 0.3 },
+  }),
+  ...getRecips("茶碗蒸し", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+  }),
+  ...getRecips("えびマヨ"),
+  ...getRecips("えびマヨ軍艦", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+  }),
+  ...getRecips("ツナ"),
+  ...getRecips("ツナマヨ"),
+  ...getRecips("ツナマヨ軍艦", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+  }),
+  ...getRecips("アボカドサーモン"),
+  ...getRecips("カリフォルニアロール", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
     taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),

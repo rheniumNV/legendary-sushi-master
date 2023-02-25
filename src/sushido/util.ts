@@ -15,3 +15,7 @@ export function normalizedPos(pos: Pos): Pos {
   const p = Math.sqrt(pos[0] * pos[0] + pos[1] * pos[1]);
   return [pos[0] / p, pos[1] / p];
 }
+
+export function distancePos(pos: Pos) {
+  return pos[0] * pos[0] + pos[1] * pos[1];
+}
