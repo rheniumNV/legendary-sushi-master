@@ -5,6 +5,7 @@ import _ from "lodash";
 import { Direction, FactoryModel, Pos, SObjTask } from "./type";
 import { HandSide, SUser } from "./SUser";
 import { SushiObjModels } from "../models/SObjModels";
+import { EventEmitter } from "stream";
 
 function pos2key(pos: [number, number]) {
   return `${pos[0]},${pos[1]}`;
@@ -18,14 +19,24 @@ function processPos(
   return [process(pos1[0], pos2[0]), process(pos1[1], pos2[1])];
 }
 
+export type FactoryEvent = {
+  type: "coin";
+  callback: (value: number, category: string) => void;
+};
+
 export class FactoryManager {
   sUnits: Map<string, SUnit> = new Map<string, SUnit>();
   sObjs: Map<string, SObj> = new Map<string, SObj>();
   sUsers: Map<string, SUser> = new Map<string, SUser>();
   tasks: SObjTask[] = [];
   coin: number = 0;
+  eventEmitter: EventEmitter = new EventEmitter();
 
   factoryModel: FactoryModel;
+
+  public onEvent(event: FactoryEvent) {
+    this.eventEmitter.on(event.type, event.callback);
+  }
 
   public get sUnitArray() {
     let units: SUnit[] = [];
@@ -89,7 +100,14 @@ export class FactoryManager {
 
     this.tasks = _.sortBy(this.tasks, (task) => {
       const { code } = task;
-      return [code];
+      const inputCount =
+        task.code === "moveStart"
+          ? task.to.inputCounts.get(task.from.id) ?? 0
+          : 0;
+      if (inputCount !== 0) {
+        console.log(task.code, inputCount);
+      }
+      return [code, -inputCount];
     }).reverse();
 
     this.tasks.forEach((task) => {
@@ -212,8 +230,9 @@ export class FactoryManager {
     }
   }
 
-  addCoin(coin: number) {
+  addCoin(coin: number, category: string) {
     this.coin += coin;
+    this.eventEmitter.emit("coin", coin, category);
   }
 
   generateObj(code: string): SObj {

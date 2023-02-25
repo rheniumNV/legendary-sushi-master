@@ -27,6 +27,8 @@ export type GameData = {
   dayCount: number;
   menuCodes: string[];
   dayTime: number;
+  xMax: number;
+  yMax: number;
   customerSpawnRatio: number;
   customerSpawnInterval: number;
   maxCustomerCount: number;
@@ -46,6 +48,8 @@ const defaultGame: GameData = {
   dayCount: 0,
   menuCodes: ["マグロにぎり", "鉄火巻", "ねぎとろ巻き", "ねぎとろ軍艦"],
   dayTime: 60,
+  xMax: 6,
+  yMax: 6,
   customerSpawnRatio: 0.7,
   customerSpawnInterval: 1,
   maxCustomerCount: 10,
@@ -157,6 +161,10 @@ export class GameManager {
   constructor(gameData: GameData = defaultGame, mapData: MapData = defaultMap) {
     this.gameData = gameData;
     this.fm = new FactoryManager(mapData);
+    this.fm.onEvent({
+      type: "coin",
+      callback: this.onFactoryEventCoin.bind(this),
+    });
     this.t = 0;
   }
 
@@ -194,7 +202,8 @@ export class GameManager {
             this.gameData.menuCodes,
             this.customers.filter(
               (customer) => customer.state === "WAITING_TABLE"
-            ).length
+            ).length,
+            this.gameData.xMax
           )
         );
       }
@@ -225,5 +234,10 @@ export class GameManager {
         this.fm.endInteractUnit(event.userId, event.unitId);
         break;
     }
+  }
+
+  protected onFactoryEventCoin(value: number, _category: string) {
+    //TODO: categoryを使う
+    this.todayCoin += value;
   }
 }

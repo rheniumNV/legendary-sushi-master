@@ -93,6 +93,16 @@ export const combineRecipe = [
     scale: 1,
   },
   {
+    inputs: ["ツナ", "マヨネーズ"],
+    code: "ツナマヨ",
+    scale: 1,
+  },
+  {
+    inputs: ["ツナマヨ", "軍艦シャリ"],
+    code: "ツナマヨ軍艦",
+    scale: 1,
+  },
+  {
     inputs: ["アボカド", "サーモン"],
     code: "アボカドサーモン",
     scale: 1,
@@ -107,6 +117,7 @@ export const combineRecipe = [
 export const SushiObjModels = {
   ...getRecips("マグロ", {
     kiru: { output: { type: "transform", code: "ねぎとろ" }, scale: 1 },
+    yaru: { output: { type: "transform", code: "ツナ" }, scale: 1 },
   }),
   ...getRecips("サーモン"),
   ...getRecips("すめし", {
@@ -131,7 +142,6 @@ export const SushiObjModels = {
   }),
   ...getRecips("なまたまご", {
     nigiru: { output: { type: "transform", code: "ときたまご" }, scale: 6 },
-    yaku: { output: { type: "transform", code: "めだまやき" }, scale: 3 },
   }),
   ...getRecips("ときたまご", {
     yaku: { output: { type: "transform", code: "たまごやき" }, scale: 3 },
@@ -144,7 +154,6 @@ export const SushiObjModels = {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
     taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),
-  ...getRecips("めだまやき"),
   ...getRecips("ねぎとろ"),
   ...getRecips("のり"),
   ...getRecips("軍艦シャリ"),
@@ -190,6 +199,12 @@ export const SushiObjModels = {
   }),
   ...getRecips("えびマヨ"),
   ...getRecips("えびマヨ軍艦", {
+    uru: { output: { type: "coin", value: 10 }, scale: 3 },
+    taberu: { output: { type: "coin", value: 10 }, scale: 3 },
+  }),
+  ...getRecips("ツナ"),
+  ...getRecips("ツナマヨ"),
+  ...getRecips("ツナマヨ軍艦", {
     uru: { output: { type: "coin", value: 10 }, scale: 3 },
     taberu: { output: { type: "coin", value: 10 }, scale: 3 },
   }),

@@ -116,7 +116,7 @@ export const 自動にぎるくん: SUnitOptions = {
     {
       processCode: "nigiru",
       requireInteract: false,
-      value: 20,
+      value: 30,
     },
   ],
 };
@@ -128,7 +128,7 @@ export const ミキサー: SUnitOptions = {
     {
       processCode: "kiru",
       requireInteract: false,
-      value: 20,
+      value: 30,
     },
   ],
 };

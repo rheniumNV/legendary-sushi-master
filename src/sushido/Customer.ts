@@ -25,7 +25,8 @@ export type CustomerState =
   | "GOING_HOME";
 
 export class Customer {
-  entryPos: Pos = [0, -5];
+  entryPos: Pos = [0, -4];
+  xMax: number;
   menuCodes: string[];
 
   id: string;
@@ -47,18 +48,20 @@ export class Customer {
   constructor(
     customerModel: CustomerModel,
     menuCodes: string[],
-    waitingTableIndex: number
+    waitingTableIndex: number,
+    xMax: number
   ) {
     this.customerModel = customerModel;
     this.menuCodes = menuCodes;
     this.id = uuidv4();
     this.changeState("WAITING_TABLE");
-    this.pos = Customer.resolveWaitingTablePos(waitingTableIndex);
-    this.targetPos = this.pos;
+    this.pos = this.entryPos;
+    this.targetPos = this.resolveWaitingTablePos(waitingTableIndex);
+    this.xMax = xMax;
   }
 
-  static resolveWaitingTablePos(waitingTableIndex: number): Pos {
-    return [0, waitingTableIndex * -0.5 - 5];
+  protected resolveWaitingTablePos(waitingTableIndex: number): Pos {
+    return [this.xMax - waitingTableIndex * 1 - 1, -4];
   }
 
   protected changeState(newState: CustomerState) {
@@ -139,7 +142,7 @@ export class Customer {
           this.changeState("GOING_TABLE");
           break;
         }
-        this.targetPos = Customer.resolveWaitingTablePos(waitingTableIndex);
+        this.targetPos = this.resolveWaitingTablePos(waitingTableIndex);
         this.moveProcess(deltaTime, () => {});
         this.patienceProcess(deltaTime);
         break;
