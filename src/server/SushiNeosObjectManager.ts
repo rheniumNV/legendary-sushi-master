@@ -11,6 +11,16 @@ function formatPos(pos: Pos) {
 }
 
 function unit2NeosObj(unit: SUnit): NeosObj {
+  const debug = JSON.stringify(unit.inputCounts, (k, v) => {
+    if (v instanceof Map) {
+      return {
+        dataType: "Map",
+        value: [...v],
+      };
+    }
+    return v;
+  });
+
   return {
     id: unit.id,
     type: "Unit",
@@ -21,6 +31,14 @@ function unit2NeosObj(unit: SUnit): NeosObj {
       progress: {
         type: "float",
         value: unit.stackProgress.toString(),
+      },
+      debug: {
+        type: "string",
+        value: debug,
+      },
+      isGenerator: {
+        type: "bool",
+        value: `${!!unit.options.generation}`,
       },
     },
   };
@@ -115,16 +133,18 @@ export class SushiNeosObjectManager {
       ...customerObjs,
     });
 
-    const view = tasks.filter(
-      (task) => task.type === "create" && task.targetType === "Customer"
-    );
+    gm.factoryEventStack.forEach((event) => {
+      tasks.push({ type: "event", eventType: event.type, option: event.data });
+    });
 
     const status = {
       create: tasks.filter((v) => v.type === "create").length,
       update: tasks.filter((v) => v.type === "update").length,
       delete: tasks.filter((v) => v.type === "delete").length,
+      event: tasks.filter((v) => v.type === "event").length,
     };
     console.log(status);
+
     return tasks;
   }
 }

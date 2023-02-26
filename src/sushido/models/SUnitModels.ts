@@ -18,6 +18,12 @@ export const えび箱: SUnitOptions = {
   generation: { objCode: "えび" },
 };
 
+export const たこ箱: SUnitOptions = {
+  code: "たこ箱",
+  stack: { maxCount: 0 },
+  generation: { objCode: "たこ" },
+};
+
 export const てんぷらこ箱: SUnitOptions = {
   code: "てんぷらこ箱",
   stack: { maxCount: 0 },
@@ -46,6 +52,12 @@ export const 瓶箱: SUnitOptions = {
   code: "瓶箱",
   stack: { maxCount: 0 },
   generation: { objCode: "瓶" },
+};
+
+export const アボカド箱: SUnitOptions = {
+  code: "アボカド箱",
+  stack: { maxCount: 0 },
+  generation: { objCode: "アボカド" },
 };
 
 export const コンベア: SUnitOptions = {
@@ -133,6 +145,58 @@ export const ミキサー: SUnitOptions = {
   ],
 };
 
+export const コンベアミキサー: SUnitOptions = {
+  code: "コンベアミキサー",
+  stack: { maxCount: 1 },
+  process: [
+    {
+      processCode: "kiru",
+      requireInteract: false,
+      value: 30,
+    },
+  ],
+  transporter: [
+    { type: "input", speed: 20 },
+    undefined,
+    { type: "output", speed: 20 },
+    undefined,
+  ],
+};
+export const コンベア自動にぎるくん: SUnitOptions = {
+  code: "コンベア自動にぎるくん",
+  stack: { maxCount: 1 },
+  process: [
+    {
+      processCode: "nigiru",
+      requireInteract: false,
+      value: 30,
+    },
+  ],
+  transporter: [
+    { type: "input", speed: 20 },
+    undefined,
+    { type: "output", speed: 20 },
+    undefined,
+  ],
+};
+export const コンベアコンロ: SUnitOptions = {
+  code: "コンベアコンロ",
+  stack: { maxCount: 1 },
+  process: [
+    {
+      processCode: "yaku",
+      requireInteract: false,
+      value: 10,
+    },
+  ],
+  transporter: [
+    { type: "input", speed: 20 },
+    undefined,
+    { type: "output", speed: 20 },
+    undefined,
+  ],
+};
+
 export const コンバイナ: SUnitOptions = {
   code: "コンバイナ",
   stack: { maxCount: 1 },
@@ -140,10 +204,22 @@ export const コンバイナ: SUnitOptions = {
   combiner: { count: 1, speed: 30 },
 };
 
+export const コンベアコンバイナ: SUnitOptions = {
+  code: "コンベアコンバイナ",
+  stack: { maxCount: 1 },
+  transporter: [
+    { type: "input", speed: 20 },
+    { type: "input", speed: 20 },
+    { type: "input", speed: 20 },
+    { type: "output", speed: 20 },
+  ],
+  combiner: { count: 1, speed: 30 },
+};
+
 export const 売却機: SUnitOptions = {
   code: "売却機",
   stack: { maxCount: 1 },
-  process: [{ processCode: "uru", requireInteract: false, value: 7 }],
+  process: [{ processCode: "uru", requireInteract: false, value: 2 }],
   transporter: [undefined, undefined, undefined, undefined],
 };
 
@@ -154,23 +230,43 @@ export const ダイニングテーブル: SUnitOptions = {
   transporter: [undefined, undefined, undefined, undefined],
 };
 
+export const ゴミ箱: SUnitOptions = {
+  code: "ゴミ箱",
+  stack: { maxCount: 0 },
+  delete: true,
+};
+
+export const ネオロイド箱: SUnitOptions = {
+  code: "ネオロイド箱",
+  stack: { maxCount: 0 },
+  delete: true,
+};
+
 export const SushiUnitModels: SUnitModel = {
   マグロ箱,
   サーモン箱,
   えび箱,
+  たこ箱,
   てんぷらこ箱,
   なまたまご箱,
   のり箱,
   すめし箱,
   瓶箱,
+  アボカド箱,
   コンベア,
   カウンター,
   コンロ,
   自動にぎるくん,
   ミキサー,
+  コンベアミキサー,
+  コンベア自動にぎるくん,
+  コンベアコンロ,
+  コンベアコンバイナ,
   コンバイナ,
   売却機,
   ダイニングテーブル,
   直角コンベアL,
   直角コンベアR,
+  ゴミ箱,
+  ネオロイド箱,
 };

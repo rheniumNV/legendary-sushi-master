@@ -55,6 +55,7 @@ export type SUnitOptions = {
     count: number;
     speed: number;
   };
+  delete?: boolean;
 };
 
 export type SObjOptions = {

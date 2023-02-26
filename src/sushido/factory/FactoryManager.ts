@@ -19,10 +19,31 @@ function processPos(
   return [process(pos1[0], pos2[0]), process(pos1[1], pos2[1])];
 }
 
-export type FactoryEvent = {
-  type: "coin";
-  callback: (value: number, category: string) => void;
-};
+export type SoundCode =
+  | "onAngered"
+  | "onDayFinished"
+  | "onLoad"
+  | "onSave"
+  | "onCleared"
+  | "onBought"
+  | "onAte"
+  | "onAnnoyed"
+  | "onStarted"
+  | "onVisited"
+  | "onTrashed"
+  | "onServed"
+  | "onPickedUp"
+  | "onGrabbed"
+  | "onPlaced"
+  | "onCompleted"
+  | "onCoinAdded";
+
+export type FactoryEvent =
+  | {
+      type: "coin";
+      callback: (value: number, category: string) => void;
+    }
+  | { type: "sound"; callback: (targetId: string, code: SoundCode) => void };
 
 export class FactoryManager {
   sUnits: Map<string, SUnit> = new Map<string, SUnit>();
@@ -76,7 +97,8 @@ export class FactoryManager {
           this.factoryModel.unitModel[code],
           pos,
           direction,
-          factoryModel
+          factoryModel,
+          this.emitSoundEvent.bind(this)
         )
       );
     });
@@ -100,14 +122,15 @@ export class FactoryManager {
 
     this.tasks = _.sortBy(this.tasks, (task) => {
       const { code } = task;
-      const inputCount =
-        task.code === "moveStart"
-          ? task.to.inputCounts.get(task.from.id) ?? 0
-          : 0;
-      if (inputCount !== 0) {
-        console.log(task.code, inputCount);
-      }
-      return [code, -inputCount];
+      //TODO: 分岐する際に交互に分かれるようにする。
+      // const inputCount =
+      //   task.code === "moveStart"
+      //     ? task.to.inputCounts.get(task.from.id) ?? 0
+      //     : 0;
+      // if (inputCount !== 0 && task.code === "moveStart") {
+      //   console.log(task.code, task.to.id, inputCount);
+      // }
+      return [code /*, -inputCount*/];
     }).reverse();
 
     this.tasks.forEach((task) => {
@@ -233,6 +256,10 @@ export class FactoryManager {
   addCoin(coin: number, category: string) {
     this.coin += coin;
     this.eventEmitter.emit("coin", coin, category);
+  }
+
+  emitSoundEvent(targetId: string, code: SoundCode) {
+    this.eventEmitter.emit("sound", targetId, code);
   }
 
   generateObj(code: string): SObj {

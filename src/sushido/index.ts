@@ -1,5 +1,6 @@
+import _ from "lodash";
 import { Customer, CustomerModel } from "./Customer";
-import { FactoryManager } from "./factory/FactoryManager";
+import { FactoryManager, SoundCode } from "./factory/FactoryManager";
 import { Direction, Pos, SObjModel, SUnitOptions } from "./factory/type";
 
 export type GameEvent =
@@ -41,113 +42,6 @@ export type MapData = {
   direction: Direction;
 }[];
 
-export type GameReport = {};
-
-const defaultGame: GameData = {
-  coin: 0,
-  dayCount: 0,
-  menuCodes: ["マグロにぎり", "鉄火巻", "ねぎとろ巻き", "ねぎとろ軍艦"],
-  dayTime: 60,
-  xMax: 6,
-  yMax: 6,
-  customerSpawnRatio: 0.7,
-  customerSpawnInterval: 1,
-  maxCustomerCount: 10,
-  customerModel: [
-    {
-      visualCode: "normal",
-      maxOrderCount: 3,
-      nextOrderRatio: 0.8,
-      paymentScale: 1,
-      patienceScale: 1,
-      eatScale: 1,
-      thinkingOrderScale: 1,
-      pickWeight: 1,
-      moveSpeed: 1,
-    },
-    {
-      visualCode: "dart",
-      maxOrderCount: 2,
-      nextOrderRatio: 0.75,
-      paymentScale: 0.5,
-      patienceScale: 1,
-      eatScale: 2,
-      thinkingOrderScale: 1.5,
-      pickWeight: 0.5,
-      moveSpeed: 1.5,
-    },
-    {
-      visualCode: "relax",
-      maxOrderCount: 5,
-      nextOrderRatio: 0.9,
-      paymentScale: 1.5,
-      patienceScale: 2,
-      eatScale: 0.5,
-      thinkingOrderScale: 0.5,
-      pickWeight: 0.2,
-      moveSpeed: 0.75,
-    },
-  ],
-};
-
-const defaultMap: MapData = [
-  { code: "マグロ箱", pos: [0, 0], direction: 0 },
-  { code: "すめし箱", pos: [1, 0], direction: 0 },
-  { code: "コンベア", pos: [0, 1], direction: 0 },
-  { code: "コンベア", pos: [2, 0], direction: 3 },
-  { code: "コンベア", pos: [2, 1], direction: 0 },
-  { code: "コンベア", pos: [2, 3], direction: 0 },
-  { code: "自動にぎるくん", pos: [2, 2], direction: 0 },
-  { code: "ミキサー", pos: [0, 2], direction: 0 },
-  { code: "コンベア", pos: [0, 3], direction: 0 },
-  { code: "コンベア", pos: [1, 4], direction: 1 },
-  { code: "コンバイナ", pos: [2, 4], direction: 0 },
-  { code: "コンベア", pos: [3, 4], direction: 1 },
-  { code: "のり箱", pos: [4, 4], direction: 0 },
-  { code: "コンバイナ", pos: [0, 4], direction: 0 },
-  { code: "コンベア", pos: [0, 5], direction: 0 },
-  { code: "売却機", pos: [0, 6], direction: 0 },
-  { code: "コンベア", pos: [3, 0], direction: 3 },
-  { code: "コンバイナ", pos: [4, 0], direction: 0 },
-  { code: "コンベア", pos: [5, 0], direction: 3 },
-  { code: "コンバイナ", pos: [6, 0], direction: 0 },
-  { code: "コンベア", pos: [7, 0], direction: 1 },
-  { code: "マグロ箱", pos: [8, 0], direction: 0 },
-  { code: "コンベア", pos: [8, 1], direction: 0 },
-  { code: "ミキサー", pos: [8, 2], direction: 0 },
-  { code: "コンベア", pos: [7, 2], direction: 1 },
-  { code: "コンバイナ", pos: [6, 2], direction: 0 },
-  { code: "コンベア", pos: [5, 2], direction: 3 },
-  { code: "コンベア", pos: [5, 1], direction: 0 },
-  { code: "のり箱", pos: [4, -2], direction: 0 },
-  { code: "コンベア", pos: [4, -1], direction: 0 },
-  { code: "コンベア", pos: [6, -1], direction: 2 },
-  { code: "売却機", pos: [6, -2], direction: 0 },
-  { code: "コンベア", pos: [6, 3], direction: 0 },
-  { code: "売却機", pos: [6, 4], direction: 0 },
-  { code: "えび箱", pos: [2, 6], direction: 0 },
-  { code: "コンベア", pos: [3, 6], direction: 3 },
-  { code: "コンバイナ", pos: [4, 6], direction: 0 },
-  { code: "コンベア", pos: [5, 6], direction: 1 },
-  { code: "てんぷらこ箱", pos: [6, 6], direction: 0 },
-  { code: "コンベア", pos: [4, 7], direction: 0 },
-  { code: "コンベア", pos: [5, 7], direction: 3 },
-  { code: "コンロ", pos: [6, 7], direction: 0 },
-  { code: "コンベア", pos: [7, 7], direction: 3 },
-  { code: "コンバイナ", pos: [8, 7], direction: 0 },
-  { code: "コンベア", pos: [9, 7], direction: 1 },
-  { code: "自動にぎるくん", pos: [10, 7], direction: 0 },
-  { code: "コンベア", pos: [11, 7], direction: 1 },
-  { code: "すめし箱", pos: [12, 7], direction: 0 },
-  { code: "コンベア", pos: [8, 6], direction: 2 },
-  { code: "売却機", pos: [8, 5], direction: 0 },
-  { code: "カウンター", pos: [1, 7], direction: 0 },
-  { code: "カウンター", pos: [2, 7], direction: 0 },
-  { code: "ダイニングテーブル", pos: [2, 9], direction: 0 },
-  { code: "ダイニングテーブル", pos: [3, 9], direction: 0 },
-  { code: "ダイニングテーブル", pos: [4, 9], direction: 0 },
-];
-
 export class GameManager {
   fm: FactoryManager;
   customers: Customer[] = [];
@@ -157,19 +51,27 @@ export class GameManager {
   isFinished: boolean = false;
   gameData: GameData;
   totalCustomerCount: number = 0;
+  customerBoost: number = 0;
 
-  constructor(gameData: GameData = defaultGame, mapData: MapData = defaultMap) {
+  factoryEventStack: { type: string; data: any }[] = [];
+
+  constructor(gameData: GameData, mapData: MapData) {
     this.gameData = gameData;
     this.fm = new FactoryManager(mapData);
     this.fm.onEvent({
       type: "coin",
       callback: this.onFactoryEventCoin.bind(this),
     });
+    this.fm.onEvent({
+      type: "sound",
+      callback: this.onFactoryEventSound.bind(this),
+    });
     this.t = 0;
   }
 
   update(deltaTime: number = 0) {
     this.fm.update(deltaTime);
+    this.factoryEventStack = [];
 
     const emptyTables = this.fm.sUnitArray.filter((unit) =>
       unit.options.process?.some((process) => process.processCode === "taberu")
@@ -181,7 +83,8 @@ export class GameManager {
         emptyTables.filter((table) =>
           this.customers.every((customer) => customer.table?.id !== table.id)
         ),
-        customer.state === "WAITING_TABLE" ? waitingTableIndex++ : 0
+        customer.state === "WAITING_TABLE" ? waitingTableIndex++ : 0,
+        this.gameData.dayTime < this.t
       );
     });
     this.customers = this.customers.filter((customer) => !customer.isDeleted);
@@ -193,17 +96,40 @@ export class GameManager {
     ) {
       if (
         this.customers.length < this.gameData.maxCustomerCount &&
-        Math.random() < this.gameData.customerSpawnRatio
+        Math.random() <
+          (this.customers.length < 3
+            ? 0.6
+            : this.gameData.dayCount > 5 &&
+              this.customers.length < this.gameData.xMax
+            ? 0.2
+            : 0) +
+            this.customerBoost
       ) {
         this.totalCustomerCount++;
+        if (this.customerBoost > 0) {
+          this.customerBoost = 0;
+        }
         this.customers.push(
           new Customer(
-            this.gameData.customerModel[0],
+            {
+              ...this.gameData.customerModel[0],
+              visualCode:
+                _.sample([
+                  "あぶすお",
+                  "むにょわ",
+                  "にんじん",
+                  "ねおねこ",
+                  "ねおふぁ",
+                  "れにうむ",
+                ]) ?? "にんじん",
+            },
             this.gameData.menuCodes,
             this.customers.filter(
               (customer) => customer.state === "WAITING_TABLE"
             ).length,
-            this.gameData.xMax
+            this.gameData.xMax,
+            this.boostCustomer.bind(this),
+            this.onFactoryEventSound.bind(this)
           )
         );
       }
@@ -214,6 +140,10 @@ export class GameManager {
     }
 
     this.t += deltaTime;
+  }
+
+  boostCustomer(value: number) {
+    this.customerBoost += value * 0.3;
   }
 
   emitGameEvent(event: GameEvent) {
@@ -239,5 +169,10 @@ export class GameManager {
   protected onFactoryEventCoin(value: number, _category: string) {
     //TODO: categoryを使う
     this.todayCoin += value;
+    this.factoryEventStack.push({ type: "coin", data: { value } });
+  }
+
+  protected onFactoryEventSound(targetId: string, code: SoundCode) {
+    this.factoryEventStack.push({ type: "sound", data: { targetId, code } });
   }
 }

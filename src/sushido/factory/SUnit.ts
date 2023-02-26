@@ -15,6 +15,7 @@ import _ from "lodash";
 import { SObj } from "./SObj";
 import { SObjProcessModel } from "../models/SObjModels";
 import { SUser } from "./SUser";
+import { FactoryManager, SoundCode } from "./FactoryManager";
 
 function processPos(
   pos1: Pos,
@@ -56,19 +57,25 @@ export class SUnit {
 
   inputCounts: Map<string, number> = new Map<string, number>();
 
+  saleCountMap: Map<string, number> = new Map();
+
   protected _factoryModel: FactoryModel;
+
+  emitSoundEventFunc: FactoryManager["emitSoundEvent"];
 
   constructor(
     options: SUnitOptions,
     pos: Pos,
     direction: Direction,
-    _factoryModel: FactoryModel
+    _factoryModel: FactoryModel,
+    emitSoundEventFunc: FactoryManager["emitSoundEvent"]
   ) {
     this.id = uuidv4();
     this.pos = pos;
     this.options = options;
     this.direction = direction;
     this._factoryModel = _factoryModel;
+    this.emitSoundEventFunc = emitSoundEventFunc;
   }
 
   public getStackInputItemCount(): number {
@@ -311,10 +318,21 @@ export class SUnit {
               task.target.stacks[0].code = process[0].output.code;
               break;
             case "coin":
+              let saleCount = task.target.saleCountMap.get(stackObjCode) ?? 0;
+              if (process[0].processCode === "taberu") {
+                task.target.saleCountMap.set(stackObjCode, ++saleCount);
+              }
+              task.target;
               addCoin(
-                process[0].output.value,
+                Math.floor(
+                  process[0].output.value *
+                    (process[0].processCode === "taberu"
+                      ? 1
+                      : 1 / (saleCount + 1))
+                ),
                 process[0].processCode === "taberu" ? "eat" : "sale"
               );
+              task.target.emitSoundEventFunc(task.target.id, "onCoinAdded");
               deleteObj(task.target.stacks[0]);
               task.target.stacks.pop();
               break;
