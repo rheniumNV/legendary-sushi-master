@@ -11,15 +11,7 @@ function formatPos(pos: Pos) {
 }
 
 function unit2NeosObj(unit: SUnit): NeosObj {
-  const debug = JSON.stringify(unit.inputCounts, (k, v) => {
-    if (v instanceof Map) {
-      return {
-        dataType: "Map",
-        value: [...v],
-      };
-    }
-    return v;
-  });
+  const debug = "";
 
   return {
     id: unit.id,
@@ -55,6 +47,10 @@ function obj2NeosObj(obj: SObj): NeosObj {
         type: "float2",
         value: obj._speed ? formatPos(obj._speed) : "-",
       },
+      // moveStartTime: {
+      //   type: "float",
+      //   value: obj._moveStartTime.toString(),
+      // },
       maxMoveTime: {
         type: "float",
         value: obj._maxMoveTime.toString(),
@@ -62,6 +58,17 @@ function obj2NeosObj(obj: SObj): NeosObj {
       grabUserId: {
         type: "string",
         value: obj._grabUser?.id ?? "",
+      },
+      grabHandSide: {
+        type: "string",
+        value: obj._grabUser
+          ? _.includes(
+              obj._grabUser.leftGrabObjects.map((o) => o.id),
+              obj.id
+            )
+            ? "LEFT"
+            : "RIGHT"
+          : "",
       },
     },
   };
@@ -134,6 +141,9 @@ export class SushiNeosObjectManager {
     });
 
     gm.factoryEventStack.forEach((event) => {
+      if (event.type === "coin") {
+        console.log(event.data);
+      }
       tasks.push({ type: "event", eventType: event.type, option: event.data });
     });
 

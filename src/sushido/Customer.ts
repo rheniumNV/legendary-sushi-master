@@ -117,8 +117,12 @@ export class Customer {
     }
     const moveVec = normalizedPos(diff);
     this.pos = processPos(this.pos, moveVec, (a, b) => a + b * realSpeed);
-    this._moveVec = processPos(moveVec, [0, 0], (a, b) => a / 2);
-    this._maxMoveTime = realSpeed > 0 ? abs / realSpeed / 2 : 0;
+    this._moveVec = processPos(
+      moveVec,
+      [0, 0],
+      (a, b) => a * this.customerModel.moveSpeed
+    );
+    this._maxMoveTime = realSpeed > 0 ? abs / this.customerModel.moveSpeed : 0;
   }
 
   protected patienceProcess(deltaTime: number, value: number = 1) {
@@ -177,6 +181,7 @@ export class Customer {
       case "WAITING_ORDER": //いったんなしで
         this.currentOrder =
           this.menuCodes[Math.floor(Math.random() * this.menuCodes.length)];
+        this.emitSoundEventFunc(this.id, "onOrdered");
         this.changeState("WAITING_FOOD");
         break;
       case "WAITING_FOOD":

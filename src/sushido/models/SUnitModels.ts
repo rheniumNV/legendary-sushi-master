@@ -24,6 +24,12 @@ export const たこ箱: SUnitOptions = {
   generation: { objCode: "たこ" },
 };
 
+export const いか箱: SUnitOptions = {
+  code: "いか箱",
+  stack: { maxCount: 0 },
+  generation: { objCode: "いか" },
+};
+
 export const てんぷらこ箱: SUnitOptions = {
   code: "てんぷらこ箱",
   stack: { maxCount: 0 },
@@ -64,9 +70,9 @@ export const コンベア: SUnitOptions = {
   code: "コンベア",
   stack: { maxCount: 1 },
   transporter: [
-    { type: "input", speed: 20 },
+    { type: "input", speed: 10 },
     undefined,
-    { type: "output", speed: 20 },
+    { type: "output", speed: 10 },
     undefined,
   ],
 };
@@ -75,18 +81,18 @@ export const 直角コンベアL: SUnitOptions = {
   code: "直角コンベアL",
   stack: { maxCount: 1 },
   transporter: [
-    { type: "input", speed: 20 },
+    { type: "input", speed: 10 },
     undefined,
     undefined,
-    { type: "output", speed: 20 },
+    { type: "output", speed: 10 },
   ],
 };
 export const 直角コンベアR: SUnitOptions = {
   code: "直角コンベアR",
   stack: { maxCount: 1 },
   transporter: [
-    { type: "input", speed: 20 },
-    { type: "output", speed: 20 },
+    { type: "input", speed: 10 },
+    { type: "output", speed: 10 },
     undefined,
     undefined,
   ],
@@ -99,12 +105,12 @@ export const カウンター: SUnitOptions = {
     {
       processCode: "kiru",
       requireInteract: true,
-      value: 10,
+      value: 5,
     },
     {
       processCode: "nigiru",
       requireInteract: true,
-      value: 10,
+      value: 5,
     },
   ],
 };
@@ -116,7 +122,7 @@ export const コンロ: SUnitOptions = {
     {
       processCode: "yaku",
       requireInteract: false,
-      value: 10,
+      value: 5,
     },
   ],
 };
@@ -128,7 +134,7 @@ export const 自動にぎるくん: SUnitOptions = {
     {
       processCode: "nigiru",
       requireInteract: false,
-      value: 30,
+      value: 15,
     },
   ],
 };
@@ -140,7 +146,7 @@ export const ミキサー: SUnitOptions = {
     {
       processCode: "kiru",
       requireInteract: false,
-      value: 30,
+      value: 15,
     },
   ],
 };
@@ -152,13 +158,13 @@ export const コンベアミキサー: SUnitOptions = {
     {
       processCode: "kiru",
       requireInteract: false,
-      value: 30,
+      value: 15,
     },
   ],
   transporter: [
-    { type: "input", speed: 20 },
+    { type: "input", speed: 10 },
     undefined,
-    { type: "output", speed: 20 },
+    { type: "output", speed: 10 },
     undefined,
   ],
 };
@@ -169,13 +175,13 @@ export const コンベア自動にぎるくん: SUnitOptions = {
     {
       processCode: "nigiru",
       requireInteract: false,
-      value: 30,
+      value: 15,
     },
   ],
   transporter: [
-    { type: "input", speed: 20 },
+    { type: "input", speed: 10 },
     undefined,
-    { type: "output", speed: 20 },
+    { type: "output", speed: 10 },
     undefined,
   ],
 };
@@ -186,13 +192,13 @@ export const コンベアコンロ: SUnitOptions = {
     {
       processCode: "yaku",
       requireInteract: false,
-      value: 10,
+      value: 5,
     },
   ],
   transporter: [
-    { type: "input", speed: 20 },
+    { type: "input", speed: 10 },
     undefined,
-    { type: "output", speed: 20 },
+    { type: "output", speed: 10 },
     undefined,
   ],
 };
@@ -208,10 +214,10 @@ export const コンベアコンバイナ: SUnitOptions = {
   code: "コンベアコンバイナ",
   stack: { maxCount: 1 },
   transporter: [
-    { type: "input", speed: 20 },
-    { type: "input", speed: 20 },
-    { type: "input", speed: 20 },
-    { type: "output", speed: 20 },
+    { type: "input", speed: 10 },
+    { type: "input", speed: 10 },
+    { type: "input", speed: 10 },
+    { type: "output", speed: 10 },
   ],
   combiner: { count: 1, speed: 30 },
 };
@@ -247,6 +253,7 @@ export const SushiUnitModels: SUnitModel = {
   サーモン箱,
   えび箱,
   たこ箱,
+  いか箱,
   てんぷらこ箱,
   なまたまご箱,
   のり箱,

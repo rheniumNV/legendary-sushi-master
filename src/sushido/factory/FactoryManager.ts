@@ -36,14 +36,37 @@ export type SoundCode =
   | "onGrabbed"
   | "onPlaced"
   | "onCompleted"
-  | "onCoinAdded";
+  | "onCoinAdded"
+  | "onOrdered";
 
-export type FactoryEvent =
-  | {
-      type: "coin";
-      callback: (value: number, category: string) => void;
-    }
-  | { type: "sound"; callback: (targetId: string, code: SoundCode) => void };
+type FactoryEventBase = { type: string; args: any[] };
+
+type FactoryEventCoin = {
+  type: "coin";
+  args: [value: number, targetId: string, category: string];
+};
+
+type FactoryEventSound = {
+  type: "sound";
+  args: [targetId: string, code: SoundCode];
+};
+
+type FEC<T extends FactoryEventBase> = (...args: T["args"]) => void;
+
+type FER<T extends FactoryEventBase> = {
+  type: T["type"];
+  callback: FEC<T>;
+};
+
+export type FactoryEvent = FER<FactoryEventCoin> | FER<FactoryEventSound>;
+
+export type FactoryOperator = {
+  coin: FEC<FactoryEventCoin>;
+  sound: FEC<FactoryEventSound>;
+  generateObj: (code: string) => SObj;
+  deleteObj: (target: SObj) => void;
+  getT: () => number;
+};
 
 export class FactoryManager {
   sUnits: Map<string, SUnit> = new Map<string, SUnit>();
@@ -52,6 +75,7 @@ export class FactoryManager {
   tasks: SObjTask[] = [];
   coin: number = 0;
   eventEmitter: EventEmitter = new EventEmitter();
+  t: number = 0;
 
   factoryModel: FactoryModel;
 
@@ -98,13 +122,20 @@ export class FactoryManager {
           pos,
           direction,
           factoryModel,
-          this.emitSoundEvent.bind(this)
+          {
+            coin: this.addCoin.bind(this),
+            sound: this.emitSoundEvent.bind(this),
+            generateObj: this.generateObj.bind(this),
+            deleteObj: this.deleteObj.bind(this),
+            getT: this.getT.bind(this),
+          }
         )
       );
     });
   }
 
-  update(deltaTime: number = 0.2) {
+  update(t: number = performance.now(), deltaTime: number = 0.2) {
+    this.t = t;
     this.tasks = [];
     this.sUnits.forEach((unit) => {
       const nearUnits = (
@@ -134,11 +165,7 @@ export class FactoryManager {
     }).reverse();
 
     this.tasks.forEach((task) => {
-      SUnit.update(task, deltaTime * 5, {
-        addCoin: this.addCoin.bind(this),
-        deleteObj: this.deleteObj.bind(this),
-        generateObj: this.generateObj.bind(this),
-      });
+      SUnit.update(task, deltaTime * 5);
     });
 
     this.clean();
@@ -185,12 +212,12 @@ export class FactoryManager {
             ? processPos(
                 obj._parentUnit.pos,
                 input.from.pos,
-                (a, b) => ((a - b) * (input.speed ?? 0)) / 50
+                (a, b) => ((a - b) * (input.speed ?? 0)) / 25
               )
             : [0, 0];
           obj._maxMoveTime =
             input?.speed && (input?.speed ?? 0) > 0
-              ? (100 - (input?.progress ?? 0)) / input.speed / 2
+              ? (100 - (input?.progress ?? 0)) / input.speed
               : 0;
           obj._grabUser = undefined;
         }
@@ -253,9 +280,9 @@ export class FactoryManager {
     }
   }
 
-  addCoin(coin: number, category: string) {
+  addCoin(coin: number, targetId: string, category: string) {
     this.coin += coin;
-    this.eventEmitter.emit("coin", coin, category);
+    this.eventEmitter.emit("coin", coin, targetId, category);
   }
 
   emitSoundEvent(targetId: string, code: SoundCode) {
@@ -270,5 +297,9 @@ export class FactoryManager {
 
   deleteObj(sObj: SObj) {
     this.sObjs.delete(sObj.id);
+  }
+
+  getT() {
+    return this.t;
   }
 }

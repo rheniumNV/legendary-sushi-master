@@ -5,6 +5,7 @@ import { Direction, Pos } from "../sushido/factory/type";
 import { SushiUnitModels } from "../sushido/models/SUnitModels";
 
 export type NeosGameData = {
+  score: number;
   coin: number;
   day: number;
   menuCodes: string[];
@@ -29,6 +30,7 @@ export type NextGameData = {
 export type ReportGameData = {
   todayCoin: number;
   totalCustomerCount: number;
+  score: number;
 };
 
 const unitCodeList: { code: string; prise: number }[] = [
@@ -37,14 +39,14 @@ const unitCodeList: { code: string; prise: number }[] = [
   { code: "自動にぎるくん", prise: 800 },
   { code: "ミキサー", prise: 500 },
   { code: "コンバイナ", prise: 600 },
-  { code: "売却機", prise: 2000 },
-  { code: "コンベア", prise: 800 },
+  { code: "コンベア", prise: 500 },
   { code: "直角コンベアR", prise: 900 },
   { code: "直角コンベアL", prise: 900 },
-  { code: "コンベアミキサー", prise: 3000 },
-  { code: "コンベア自動にぎるくん", prise: 4000 },
+  { code: "売却機", prise: 2000 },
+  { code: "コンベアミキサー", prise: 4000 },
+  { code: "コンベア自動にぎるくん", prise: 5000 },
   { code: "コンベアコンロ", prise: 3500 },
-  { code: "コンベアコンバイナ", prise: 5000 },
+  { code: "コンベアコンバイナ", prise: 6000 },
 ];
 
 const supplyUnitCodeList = [
@@ -52,11 +54,13 @@ const supplyUnitCodeList = [
   { code: "サーモン箱", prise: 600 },
   { code: "えび箱", prise: 600 },
   { code: "てんぷらこ箱", prise: 300 },
-  { code: "なまたまご箱", prise: 400 },
-  { code: "のり箱", prise: 300 },
-  { code: "すめし箱", prise: 600 },
+  { code: "なまたまご箱", prise: 500 },
+  { code: "のり箱", prise: 400 },
+  { code: "すめし箱", prise: 800 },
   { code: "瓶箱", prise: 300 },
   { code: "たこ箱", prise: 300 },
+  { code: "いか箱", prise: 300 },
+  { code: "アボカド箱", prise: 500 },
 ];
 
 type MenuConfig = {
@@ -80,6 +84,16 @@ const menuList: MenuConfig[] = [
     code: "たこにぎり",
     level: 1,
     requireUnit: ["すめし箱", "たこ箱", "カウンター"],
+  },
+  {
+    code: "いかにぎり",
+    level: 1,
+    requireUnit: ["すめし箱", "いか箱", "カウンター"],
+  },
+  {
+    code: "いかたこにぎり",
+    level: 2,
+    requireUnit: ["すめし箱", "いか箱", "たこ箱", "カウンター"],
   },
   {
     code: "鉄火巻",
@@ -178,6 +192,17 @@ const menuList: MenuConfig[] = [
       "カウンター",
     ],
   },
+  {
+    code: "カリフォルニアロール",
+    level: 2,
+    requireUnit: [
+      "アボカド箱",
+      "サーモン箱",
+      "すめし箱",
+      "のり箱",
+      "カウンター",
+    ],
+  },
 ];
 
 function getNewMenu(data: NeosGameData): MenuConfig | undefined {
@@ -200,7 +225,9 @@ function getNewMenu(data: NeosGameData): MenuConfig | undefined {
       case 8:
         return { min: 1, max: 4 };
       default:
-        return data.day % 2 == 0 ? { min: 1, max: 4 } : undefined;
+        return data.day > 9 && (data.day - 1) % 3 == 0
+          ? { min: 1, max: 4 }
+          : undefined;
     }
   })();
   /*
@@ -230,6 +257,7 @@ function getNewMenu(data: NeosGameData): MenuConfig | undefined {
 
 export function newNeosGameData(): NeosGameData {
   return {
+    score: 0,
     coin: 0,
     day: 0,
     menuCodes: ["マグロにぎり"],
@@ -370,15 +398,50 @@ function joinUnits(
   ];
 }
 
+function getRequireUnitCodes(menuCodes: string[]) {
+  return _.uniq(
+    menuCodes
+      .map((c) => {
+        const option = _.find(menuList, ({ code }) => code === c);
+        return option?.requireUnit ?? [];
+      })
+      .flatMap((v) => v)
+  );
+}
+
 export function nextGameData(
   gm: GameManager,
   data: NeosGameData
 ): NeosGameData {
   const coin = data.coin + gm.todayCoin;
   const newMenu = getNewMenu(data);
+  const menuCodes = newMenu
+    ? [...data.menuCodes, newMenu.code]
+    : data.menuCodes;
   const exitUnitCodes = _.uniq(data.mapData.map((v) => v.code));
   const prevMapData = data.mapData.filter((unit) => unit.prise === 0);
   const bluePrintCount = 4 + data.xLevel + data.yLevel;
+  const requireUnitCodes = getRequireUnitCodes(menuCodes);
+  const bluePrintNormalUnitList = unitCodeList.filter((v) => v.prise <= coin);
+  const bluePrintSupplyUnitList = supplyUnitCodeList.filter((v) =>
+    _.includes(requireUnitCodes, v.code)
+  );
+  const bluePrintUnitList = [
+    ...bluePrintNormalUnitList,
+    ...bluePrintSupplyUnitList,
+  ];
+  let supplyCount = 0;
+  const bluePrintCodes = _.range(bluePrintCount).map(() => {
+    const unit = _.sample(
+      supplyCount > 1
+        ? bluePrintNormalUnitList
+        : [...bluePrintNormalUnitList, ...supplyUnitCodeList]
+    );
+    if (_.includes(bluePrintSupplyUnitList, unit)) {
+      supplyCount++;
+    }
+    return unit;
+  });
   const mapData = joinUnits(
     newMenu
       ? joinUnits(
@@ -397,9 +460,8 @@ export function nextGameData(
       : prevMapData,
     data.xLevel,
     data.yLevel,
-    _.range(bluePrintCount)
-      .map((_i): NeosGameData["mapData"] => {
-        const unit = _.sample(unitCodeList.filter((v) => v.prise <= coin));
+    bluePrintCodes
+      .map((unit): NeosGameData["mapData"] => {
         return unit
           ? [{ code: unit.code, prise: unit.prise, pos: [0, 0], direction: 0 }]
           : [];
@@ -409,11 +471,46 @@ export function nextGameData(
 
   return {
     ...data,
+    score: gm.score,
     coin,
     day: data.day + 1,
-    menuCodes: newMenu ? [...data.menuCodes, newMenu.code] : data.menuCodes,
+    menuCodes,
     newMenuCode: newMenu?.code ?? "",
+    totalCustomerCount: data.totalCustomerCount + gm.totalCustomerCount,
     mapData,
+  };
+}
+
+export function reroll(data: NeosGameData): NeosGameData {
+  const bluePrintCount = data.mapData.filter((u) => u.prise > 0).length;
+  const cleanMap = data.mapData.filter((u) => u.prise === 0);
+  const requireUnitCodes = getRequireUnitCodes(data.menuCodes);
+  const bluePrintUnitList = [
+    ...unitCodeList.filter((v) => v.prise <= data.coin),
+    ...supplyUnitCodeList.filter((v) => _.includes(requireUnitCodes, v.code)),
+  ];
+  return {
+    ...data,
+    mapData: joinUnits(
+      cleanMap,
+      data.xLevel,
+      data.yLevel,
+      _.range(bluePrintCount)
+        .map((_i): NeosGameData["mapData"] => {
+          const unit = _.sample(bluePrintUnitList);
+          return unit
+            ? [
+                {
+                  code: unit.code,
+                  prise: unit.prise,
+                  pos: [0, 0],
+                  direction: 0,
+                },
+              ]
+            : [];
+        })
+        .flatMap((v) => v)
+    ),
   };
 }
 
@@ -425,14 +522,15 @@ export function convertNeosGameData(data: NeosGameData): [GameData, MapData] {
 
   return [
     {
+      score: data.score,
       coin: data.coin,
       dayCount: data.day,
       menuCodes: data.menuCodes,
-      dayTime: 40,
+      dayTime: 60,
       xMax: xMax,
       yMax: yMax,
       customerSpawnRatio: 0.3,
-      customerSpawnInterval: 1,
+      customerSpawnInterval: 2,
       maxCustomerCount: xMax * 2 - 1,
       customerModel: [
         {
@@ -440,11 +538,11 @@ export function convertNeosGameData(data: NeosGameData): [GameData, MapData] {
           maxOrderCount: 3,
           nextOrderRatio: 0.8,
           paymentScale: 1,
-          patienceScale: 2,
+          patienceScale: 1,
           eatScale: 1,
-          thinkingOrderScale: 1,
-          pickWeight: 1,
-          moveSpeed: 2,
+          thinkingOrderScale: 0.5,
+          pickWeight: 0.5,
+          moveSpeed: 1,
         },
         {
           visualCode: "dart",
@@ -500,5 +598,6 @@ export function reportGame(gm: GameManager): ReportGameData {
   return {
     todayCoin: gm.todayCoin,
     totalCustomerCount: gm.totalCustomerCount,
+    score: gm.score,
   };
 }

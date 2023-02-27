@@ -1,0 +1,13 @@
+module.exports = {
+  apps: [
+    {
+      name: "legendary-sushi-master",
+      script: "./dist/server/main.js",
+      watch: true,
+      env: {
+        NODE_ENV: "production",
+        PORT: 3000,
+      },
+    },
+  ],
+};

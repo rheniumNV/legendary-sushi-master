@@ -75,6 +75,7 @@ export class SUser {
       if (grabObjects[0] && combinedObjCode) {
         grabObjects[0].code = combinedObjCode;
       } else {
+        obj._maxMoveTime = 0;
         grabObjects.push(obj);
       }
       this.fm.emitSoundEvent(obj._parentUnit?.id ?? obj.id, "onGrabbed");

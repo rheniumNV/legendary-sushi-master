@@ -4,9 +4,24 @@ import { FactoryManager, SoundCode } from "./factory/FactoryManager";
 import { Direction, Pos, SObjModel, SUnitOptions } from "./factory/type";
 
 export type GameEvent =
-  | { code: "grabUnit"; userId: string; unitId: string }
-  | { code: "grabObj"; userId: string; objId: string }
-  | { code: "releaseObj"; userId: string; unitId: string }
+  | {
+      code: "grabUnit";
+      userId: string;
+      unitId: string;
+      handSide?: "RIGHT" | "LEFT";
+    }
+  | {
+      code: "grabObj";
+      userId: string;
+      objId: string;
+      handSide?: "RIGHT" | "LEFT";
+    }
+  | {
+      code: "releaseObj";
+      userId: string;
+      unitId: string;
+      handSide?: "RIGHT" | "LEFT";
+    }
   | {
       code: "startInteractUnit";
       userId: string;
@@ -24,6 +39,7 @@ export type FactoryModel = {
 };
 
 export type GameData = {
+  score: number;
   coin: number;
   dayCount: number;
   menuCodes: string[];
@@ -52,6 +68,7 @@ export class GameManager {
   gameData: GameData;
   totalCustomerCount: number = 0;
   customerBoost: number = 0;
+  score: number;
 
   factoryEventStack: { type: string; data: any }[] = [];
 
@@ -67,11 +84,12 @@ export class GameManager {
       callback: this.onFactoryEventSound.bind(this),
     });
     this.t = 0;
+    this.score = gameData.score;
   }
 
   update(deltaTime: number = 0) {
-    this.fm.update(deltaTime);
     this.factoryEventStack = [];
+    this.fm.update(deltaTime);
 
     const emptyTables = this.fm.sUnitArray.filter((unit) =>
       unit.options.process?.some((process) => process.processCode === "taberu")
@@ -98,10 +116,10 @@ export class GameManager {
         this.customers.length < this.gameData.maxCustomerCount &&
         Math.random() <
           (this.customers.length < 3
-            ? 0.6
+            ? 0.5
             : this.gameData.dayCount > 5 &&
               this.customers.length < this.gameData.xMax
-            ? 0.2
+            ? 0.1
             : 0) +
             this.customerBoost
       ) {
@@ -115,12 +133,14 @@ export class GameManager {
               ...this.gameData.customerModel[0],
               visualCode:
                 _.sample([
-                  "あぶすお",
+                  "あぶすと",
                   "むにょわ",
                   "にんじん",
                   "ねおねこ",
                   "ねおふぁ",
                   "れにうむ",
+                  "おれんじ",
+                  "まるしば",
                 ]) ?? "にんじん",
             },
             this.gameData.menuCodes,
@@ -135,7 +155,12 @@ export class GameManager {
       }
     }
 
-    if (this.gameData.dayTime < this.t && this.customers.length === 0) {
+    if (
+      this.gameData.dayTime < this.t &&
+      this.customers.length === 0 &&
+      !this.isFinished
+    ) {
+      this.todayCoin += 500;
       this.isFinished = true;
     }
 
@@ -149,13 +174,17 @@ export class GameManager {
   emitGameEvent(event: GameEvent) {
     switch (event.code) {
       case "grabUnit":
-        this.fm.grabUnit("RIGHT", event.userId, event.unitId);
+        this.fm.grabUnit(event.handSide ?? "RIGHT", event.userId, event.unitId);
         break;
       case "grabObj":
-        this.fm.grabObj("RIGHT", event.userId, event.objId);
+        this.fm.grabObj(event.handSide ?? "RIGHT", event.userId, event.objId);
         break;
       case "releaseObj":
-        this.fm.releaseObj("RIGHT", event.userId, event.unitId);
+        this.fm.releaseObj(
+          event.handSide ?? "RIGHT",
+          event.userId,
+          event.unitId
+        );
         break;
       case "startInteractUnit":
         this.fm.startInteractUnit(event.userId, event.unitId);
@@ -166,10 +195,18 @@ export class GameManager {
     }
   }
 
-  protected onFactoryEventCoin(value: number, _category: string) {
+  protected onFactoryEventCoin(
+    value: number,
+    targetId: string,
+    category: string
+  ) {
     //TODO: categoryを使う
     this.todayCoin += value;
-    this.factoryEventStack.push({ type: "coin", data: { value } });
+    this.score += value;
+    this.factoryEventStack.push({
+      type: "coin",
+      data: { value, targetId, category },
+    });
   }
 
   protected onFactoryEventSound(targetId: string, code: SoundCode) {
