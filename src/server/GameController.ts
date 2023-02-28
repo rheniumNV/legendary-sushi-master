@@ -4,6 +4,19 @@ import { GameData, GameManager, MapData } from "../sushido";
 import { Direction, Pos } from "../sushido/factory/type";
 import { SushiUnitModels } from "../sushido/models/SUnitModels";
 
+export function pickSample<T>(list: T[], getWeight: (value: T) => number) {
+  const sumWeight = _.sumBy(list, (v: T) => getWeight(v));
+  const point = Math.random() * sumWeight;
+  let cursor = 0;
+  for (let i = 0; i < list.length && cursor <= point; i++) {
+    const weight = getWeight(list[i]);
+    cursor += weight;
+    if (cursor > point) {
+      return list[i];
+    }
+  }
+}
+
 export type NeosGameData = {
   score: number;
   coin: number;
@@ -33,34 +46,34 @@ export type ReportGameData = {
   score: number;
 };
 
-const unitCodeList: { code: string; prise: number }[] = [
-  { code: "カウンター", prise: 200 },
-  { code: "コンロ", prise: 400 },
-  { code: "自動にぎるくん", prise: 800 },
-  { code: "ミキサー", prise: 500 },
-  { code: "コンバイナ", prise: 600 },
-  { code: "コンベア", prise: 500 },
-  { code: "直角コンベアR", prise: 900 },
-  { code: "直角コンベアL", prise: 900 },
-  { code: "売却機", prise: 2000 },
-  { code: "コンベアミキサー", prise: 4000 },
-  { code: "コンベア自動にぎるくん", prise: 5000 },
-  { code: "コンベアコンロ", prise: 3500 },
-  { code: "コンベアコンバイナ", prise: 6000 },
+const unitCodeList: { code: string; prise: number; weight: number }[] = [
+  { code: "カウンター", prise: 200, weight: 1 },
+  { code: "コンロ", prise: 400, weight: 1 },
+  { code: "自動にぎるくん", prise: 800, weight: 2 },
+  { code: "ミキサー", prise: 500, weight: 1 },
+  { code: "コンバイナ", prise: 600, weight: 1 },
+  { code: "コンベア", prise: 500, weight: 2 },
+  { code: "直角コンベアR", prise: 900, weight: 1.5 },
+  { code: "直角コンベアL", prise: 900, weight: 1.5 },
+  { code: "売却機", prise: 2000, weight: 0.5 },
+  { code: "コンベアミキサー", prise: 4000, weight: 0.5 },
+  { code: "コンベア自動にぎるくん", prise: 5000, weight: 0.5 },
+  { code: "コンベアコンロ", prise: 3500, weight: 0.5 },
+  { code: "コンベアコンバイナ", prise: 6000, weight: 0.5 },
 ];
 
 const supplyUnitCodeList = [
-  { code: "マグロ箱", prise: 600 },
-  { code: "サーモン箱", prise: 600 },
-  { code: "えび箱", prise: 600 },
-  { code: "てんぷらこ箱", prise: 300 },
-  { code: "なまたまご箱", prise: 500 },
-  { code: "のり箱", prise: 400 },
-  { code: "すめし箱", prise: 800 },
-  { code: "瓶箱", prise: 300 },
-  { code: "たこ箱", prise: 300 },
-  { code: "いか箱", prise: 300 },
-  { code: "アボカド箱", prise: 500 },
+  { code: "マグロ箱", prise: 600, weight: 0.5 },
+  { code: "サーモン箱", prise: 600, weight: 0.5 },
+  { code: "えび箱", prise: 600, weight: 0.5 },
+  { code: "てんぷらこ箱", prise: 300, weight: 0.5 },
+  { code: "なまたまご箱", prise: 500, weight: 0.5 },
+  { code: "のり箱", prise: 400, weight: 0.5 },
+  { code: "すめし箱", prise: 800, weight: 1 },
+  { code: "瓶箱", prise: 300, weight: 0.5 },
+  { code: "たこ箱", prise: 300, weight: 0.5 },
+  { code: "いか箱", prise: 300, weight: 0.5 },
+  { code: "アボカド箱", prise: 500, weight: 0.5 },
 ];
 
 type MenuConfig = {
@@ -409,6 +422,40 @@ function getRequireUnitCodes(menuCodes: string[]) {
   );
 }
 
+export function isValid(data: NeosGameData) {
+  //level
+  if (data.xLevel > 2 || data.yLevel > 2) {
+  }
+
+  //unknown unit
+  const unknownUnits = data.mapData.filter(
+    (unit) => !_.includes(allUnitCodes, unit.code)
+  );
+  if (unknownUnits.length > 0) {
+  }
+
+  //lost require unit
+  const xMax = 6 + data.xLevel * 3;
+  const yMax = 6 + data.yLevel * 3;
+  const mapUnits = data.mapData.filter((unit) => unit.prise === 0);
+  const requireUnitCodes = getRequireUnitCodes(data.menuCodes);
+  const lostRequireUnitCodes = requireUnitCodes.filter((code) =>
+    mapUnits.some(
+      (unit) =>
+        unit.code === code &&
+        unit.pos[0] >= 0 &&
+        unit.pos[1] >= 0 &&
+        unit.pos[0] < xMax &&
+        unit.pos[1] < yMax
+    )
+  );
+  if (lostRequireUnitCodes.length > 0) {
+    lostRequireUnitCodes.map((code) => {
+      const units = mapUnits.filter((unit) => unit.code === code);
+    });
+  }
+}
+
 export function nextGameData(
   gm: GameManager,
   data: NeosGameData
@@ -418,24 +465,21 @@ export function nextGameData(
   const menuCodes = newMenu
     ? [...data.menuCodes, newMenu.code]
     : data.menuCodes;
-  const exitUnitCodes = _.uniq(data.mapData.map((v) => v.code));
   const prevMapData = data.mapData.filter((unit) => unit.prise === 0);
+  const exitUnitCodes = _.uniq(prevMapData.map((v) => v.code));
   const bluePrintCount = 4 + data.xLevel + data.yLevel;
   const requireUnitCodes = getRequireUnitCodes(menuCodes);
   const bluePrintNormalUnitList = unitCodeList.filter((v) => v.prise <= coin);
-  const bluePrintSupplyUnitList = supplyUnitCodeList.filter((v) =>
-    _.includes(requireUnitCodes, v.code)
+  const bluePrintSupplyUnitList = supplyUnitCodeList.filter(
+    (v) => _.includes(requireUnitCodes, v.code) && v.prise <= coin
   );
-  const bluePrintUnitList = [
-    ...bluePrintNormalUnitList,
-    ...bluePrintSupplyUnitList,
-  ];
   let supplyCount = 0;
   const bluePrintCodes = _.range(bluePrintCount).map(() => {
-    const unit = _.sample(
+    const unit = pickSample(
       supplyCount > 1
         ? bluePrintNormalUnitList
-        : [...bluePrintNormalUnitList, ...supplyUnitCodeList]
+        : [...bluePrintNormalUnitList, ...bluePrintSupplyUnitList],
+      (u) => u.weight
     );
     if (_.includes(bluePrintSupplyUnitList, unit)) {
       supplyCount++;
@@ -534,7 +578,7 @@ export function convertNeosGameData(data: NeosGameData): [GameData, MapData] {
       maxCustomerCount: xMax * 2 - 1,
       customerModel: [
         {
-          visualCode: "normal",
+          visualCode: "あぶすと",
           maxOrderCount: 3,
           nextOrderRatio: 0.8,
           paymentScale: 1,
@@ -545,26 +589,81 @@ export function convertNeosGameData(data: NeosGameData): [GameData, MapData] {
           moveSpeed: 1,
         },
         {
-          visualCode: "dart",
+          visualCode: "むにょわ",
           maxOrderCount: 2,
-          nextOrderRatio: 0.75,
-          paymentScale: 0.5,
-          patienceScale: 2,
-          eatScale: 2,
-          thinkingOrderScale: 1.5,
+          nextOrderRatio: 1,
+          paymentScale: 1,
+          patienceScale: 1,
+          eatScale: 1,
+          thinkingOrderScale: 0.5,
           pickWeight: 0.5,
-          moveSpeed: 3,
+          moveSpeed: 0.8,
         },
         {
-          visualCode: "relax",
-          maxOrderCount: 5,
-          nextOrderRatio: 0.9,
-          paymentScale: 1.5,
-          patienceScale: 3,
-          eatScale: 0.5,
+          visualCode: "にんじん",
+          maxOrderCount: 6,
+          nextOrderRatio: 0.6,
+          paymentScale: 1,
+          patienceScale: 1,
+          eatScale: 2,
           thinkingOrderScale: 0.5,
-          pickWeight: 0.2,
-          moveSpeed: 1.5,
+          pickWeight: 0.5,
+          moveSpeed: 1,
+        },
+        {
+          visualCode: "ねおねこ",
+          maxOrderCount: 3,
+          nextOrderRatio: 0.8,
+          paymentScale: 1,
+          patienceScale: 1,
+          eatScale: 1,
+          thinkingOrderScale: 0.7,
+          pickWeight: 0.5,
+          moveSpeed: 1,
+        },
+        {
+          visualCode: "ねおふぁ",
+          maxOrderCount: 3,
+          nextOrderRatio: 0.8,
+          paymentScale: 1,
+          patienceScale: 1,
+          eatScale: 1,
+          thinkingOrderScale: 0.5,
+          pickWeight: 0.5,
+          moveSpeed: 1,
+        },
+        {
+          visualCode: "れにうむ",
+          maxOrderCount: 3,
+          nextOrderRatio: 0.5,
+          paymentScale: 1,
+          patienceScale: 1,
+          eatScale: 1.5,
+          thinkingOrderScale: 1,
+          pickWeight: 0.5,
+          moveSpeed: 1.2,
+        },
+        {
+          visualCode: "おれんじ",
+          maxOrderCount: 3,
+          nextOrderRatio: 0.8,
+          paymentScale: 1.5,
+          patienceScale: 2,
+          eatScale: 2,
+          thinkingOrderScale: 1,
+          pickWeight: 0.5,
+          moveSpeed: 2,
+        },
+        {
+          visualCode: "まるしば",
+          maxOrderCount: 3,
+          nextOrderRatio: 0.8,
+          paymentScale: 1,
+          patienceScale: 0.7,
+          eatScale: 0.7,
+          thinkingOrderScale: 0.5,
+          pickWeight: 0.5,
+          moveSpeed: 0.7,
         },
       ],
     },

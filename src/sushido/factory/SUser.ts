@@ -105,7 +105,7 @@ export class SUser {
       this.fm.emitSoundEvent(to.id, "onPlaced");
     } else if (obj && to.options.delete) {
       grabObjects.pop();
-      this.fm.emitSoundEvent(to.id, "onPlaced");
+      this.fm.emitSoundEvent(to.id, "onTrashed");
     }
   }
 }

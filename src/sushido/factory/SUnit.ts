@@ -330,17 +330,17 @@ export class SUnit {
               task.target.stacks[0].code = process[0].output.code;
               break;
             case "coin":
-              let saleCount = task.target.saleCountMap.get(stackObjCode) ?? 0;
-              if (process[0].processCode === "taberu") {
-                task.target.saleCountMap.set(stackObjCode, ++saleCount);
+              let saleCount =
+                (task.target.saleCountMap.get(stackObjCode) ?? 0) + 1;
+              if (process[0].processCode !== "taberu") {
+                task.target.saleCountMap.set(stackObjCode, saleCount);
               }
-              task.target;
               task.target.factoryOperator.coin(
                 Math.floor(
                   process[0].output.value *
                     (process[0].processCode === "taberu"
                       ? 1
-                      : 1 / (saleCount + 1))
+                      : 1 / (saleCount / 3 + 1))
                 ),
                 task.target.id,
                 process[0].processCode === "taberu" ? "eat" : "sale"

@@ -189,7 +189,7 @@ export const SushiObjModels = {
     nigiru: { output: { type: "transform", code: "ときたまご" }, scale: 3 },
   }),
   ...getRecips("ときたまご", {
-    yaku: { output: { type: "transform", code: "たまごやき" }, scale: 1.5 },
+    yaku: { output: { type: "transform", code: "たまごやき" }, scale: 0.8 },
     kiru: { output: { type: "transform", code: "マヨネーズ" }, scale: 0.25 },
   }),
   ...getRecips("マヨネーズ"),
