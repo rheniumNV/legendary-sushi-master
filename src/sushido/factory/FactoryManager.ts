@@ -246,7 +246,6 @@ export class FactoryManager {
       this.sUsers.get(userId) ??
       this.sUsers.set(userId, new SUser(this, userId)).get(userId);
     const obj = this.sObjs.get(targetObjId);
-    console.log(user, obj);
     if (user && obj) {
       user.grabObj(side, obj);
     }

@@ -111,23 +111,21 @@ wss.on("connection", (ws, request) => {
   sendEvent({ type: "clean" });
 
   events.on("updated", () => {
-    if (updateDone && gm && som) {
+    if (updateDone && gm && som && gameData) {
       if (gm.isFinished) {
         sendEvent({
           type: "report",
           data: reportGame(gm),
         });
-        if (gameData) {
-          const next = nextGameData(gm, gameData);
-          sendEvent({
-            type: "updateGameData",
-            data: json2emap(next),
-          });
-        }
+        const next = nextGameData(gm, gameData);
+        sendEvent({
+          type: "updateGameData",
+          data: json2emap(next),
+        });
         clearInterval(intervalId);
-        setTimeout(() => {
-          ws.close();
-        }, 10000);
+        // setTimeout(() => {
+        //   ws.close();
+        // }, 10000);
       } else {
         const tasks = som.getUpdate(gm);
         sendEvent({ type: "update", tasks });

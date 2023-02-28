@@ -14,6 +14,7 @@ const appCss = css({
 export type GameReport = {};
 
 const defaultGame: GameData = {
+  score: 0,
   coin: 0,
   dayCount: 0,
   menuCodes: ["マグロにぎり", "鉄火巻", "ねぎとろ巻き", "ねぎとろ軍艦"],
