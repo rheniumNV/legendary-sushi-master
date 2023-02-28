@@ -486,8 +486,8 @@ export function nextGameData(
     }
     return unit;
   });
-  const mapData = joinUnits(
-    newMenu
+  const mapData = [
+    ...(newMenu
       ? joinUnits(
           prevMapData,
           data.xLevel,
@@ -501,17 +501,22 @@ export function nextGameData(
               prise: 0,
             }))
         )
-      : prevMapData,
-    data.xLevel,
-    data.yLevel,
-    bluePrintCodes
-      .map((unit): NeosGameData["mapData"] => {
+      : prevMapData),
+    ...bluePrintCodes
+      .map((unit, i): NeosGameData["mapData"] => {
         return unit
-          ? [{ code: unit.code, prise: unit.prise, pos: [0, 0], direction: 0 }]
+          ? [
+              {
+                code: unit.code,
+                prise: unit.prise,
+                pos: [i, -2],
+                direction: 0,
+              },
+            ]
           : [];
       })
-      .flatMap((v) => v)
-  );
+      .flatMap((v) => v),
+  ];
 
   return {
     ...data,
@@ -600,6 +605,17 @@ export function convertNeosGameData(data: NeosGameData): [GameData, MapData] {
           moveSpeed: 0.8,
         },
         {
+          visualCode: "むにょに",
+          maxOrderCount: 2,
+          nextOrderRatio: 1,
+          paymentScale: 1,
+          patienceScale: 1,
+          eatScale: 1,
+          thinkingOrderScale: 0.5,
+          pickWeight: 0.5,
+          moveSpeed: 0.8,
+        },
+        {
           visualCode: "にんじん",
           maxOrderCount: 6,
           nextOrderRatio: 0.6,
@@ -664,6 +680,28 @@ export function convertNeosGameData(data: NeosGameData): [GameData, MapData] {
           thinkingOrderScale: 0.5,
           pickWeight: 0.5,
           moveSpeed: 0.7,
+        },
+        {
+          visualCode: "けつじょ",
+          maxOrderCount: 6,
+          nextOrderRatio: 0.9,
+          paymentScale: 1,
+          patienceScale: 0.7,
+          eatScale: 3,
+          thinkingOrderScale: 0.3,
+          pickWeight: 0.5,
+          moveSpeed: 1.3,
+        },
+        {
+          visualCode: "かずかず",
+          maxOrderCount: 3,
+          nextOrderRatio: 0.4,
+          paymentScale: 1.2,
+          patienceScale: 0.6,
+          eatScale: 1,
+          thinkingOrderScale: 0.4,
+          pickWeight: 0.5,
+          moveSpeed: 1.5,
         },
       ],
     },

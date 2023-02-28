@@ -129,20 +129,8 @@ export class GameManager {
         }
         this.customers.push(
           new Customer(
-            {
-              ...this.gameData.customerModel[0],
-              visualCode:
-                _.sample([
-                  "あぶすと",
-                  "むにょわ",
-                  "にんじん",
-                  "ねおねこ",
-                  "ねおふぁ",
-                  "れにうむ",
-                  "おれんじ",
-                  "まるしば",
-                ]) ?? "にんじん",
-            },
+            _.sample(this.gameData.customerModel) ??
+              this.gameData.customerModel[0],
             this.gameData.menuCodes,
             this.customers.filter(
               (customer) => customer.state === "WAITING_TABLE"

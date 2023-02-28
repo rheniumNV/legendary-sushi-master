@@ -123,9 +123,9 @@ wss.on("connection", (ws, request) => {
           data: json2emap(next),
         });
         clearInterval(intervalId);
-        // setTimeout(() => {
-        //   ws.close();
-        // }, 10000);
+        setTimeout(() => {
+          ws.close();
+        }, 10000);
       } else {
         const tasks = som.getUpdate(gm);
         sendEvent({ type: "update", tasks });
@@ -189,9 +189,9 @@ wss.on("connection", (ws, request) => {
       }
     }
   });
-  ws.on("close", () => {
+  ws.on("close", (code, reason) => {
     clearInterval(intervalId);
-    console.info(`close:${tag}:`);
+    console.info(`close:${tag}:`, code, reason);
     gm = undefined;
     gameData = undefined;
     som = undefined;

@@ -56,6 +56,9 @@ export type SUnitOptions = {
     speed: number;
   };
   delete?: boolean;
+  titleEn?: string;
+  descriptionJa?: string;
+  descriptionEn?: string;
 };
 
 export type SObjOptions = {
