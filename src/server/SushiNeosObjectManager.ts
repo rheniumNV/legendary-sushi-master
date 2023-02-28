@@ -141,19 +141,16 @@ export class SushiNeosObjectManager {
     });
 
     gm.factoryEventStack.forEach((event) => {
-      if (event.type === "coin") {
-        console.log(event.data);
-      }
       tasks.push({ type: "event", eventType: event.type, option: event.data });
     });
 
-    const status = {
-      create: tasks.filter((v) => v.type === "create").length,
-      update: tasks.filter((v) => v.type === "update").length,
-      delete: tasks.filter((v) => v.type === "delete").length,
-      event: tasks.filter((v) => v.type === "event").length,
-    };
-    console.log(status);
+    // const status = {
+    //   create: tasks.filter((v) => v.type === "create").length,
+    //   update: tasks.filter((v) => v.type === "update").length,
+    //   delete: tasks.filter((v) => v.type === "delete").length,
+    //   event: tasks.filter((v) => v.type === "event").length,
+    // };
+    // console.log(status);
 
     return tasks;
   }

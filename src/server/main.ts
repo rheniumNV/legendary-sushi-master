@@ -125,7 +125,9 @@ wss.on("connection", (ws, request) => {
           });
         }
         clearInterval(intervalId);
-        ws.close();
+        setTimeout(() => {
+          ws.close();
+        }, 10000);
       } else {
         const tasks = som.getUpdate(gm);
         sendEvent({ type: "update", tasks });
@@ -149,7 +151,7 @@ wss.on("connection", (ws, request) => {
       });
     }
     if (data && som) {
-      console.info(`received:${tag}:`, data.type);
+      // console.info(`received:${tag}:`, data.type);
       switch (data.type) {
         case "init":
           gm = newGame(data.option);
