@@ -214,7 +214,7 @@ export class Customer {
               : -2
           );
           if (this.patience > 80) {
-            this.addScore(100);
+            this.addScore(30);
           }
           this.boostCustomerFunc;
           if (
