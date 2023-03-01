@@ -1,4 +1,4 @@
-import { GameData, GameManager, MapData } from "../sushido";
+import { GameEvent, GameManager } from "../sushido";
 import { WebSocketServer, WebSocket } from "ws";
 import http from "http";
 import express from "express";
@@ -8,18 +8,33 @@ import EventEmitter from "events";
 import { SushiNeosObjectManager } from "./SushiNeosObjectManager";
 import { Task } from "./NeosSyncManager";
 import {
+  getErrors,
+  NeosDataError,
   NeosGameData,
   newGame,
   newNeosGameData,
   nextGameData,
   reportGame,
   ReportGameData,
+  reroll,
 } from "./GameController";
+import { Pos } from "../sushido/factory/type";
+import { v4 as uuidv4 } from "uuid";
+
+type SError =
+  | ({
+      code: "DataError";
+    } & NeosDataError)
+  | {
+      code: "GameEvent" | "Update" | "Parse" | "Unknown";
+      tag: string;
+    };
 
 type EventMessage4Neos =
   | { type: "update"; tasks: Task[] }
   | { type: "clean" }
   | { type: "report"; data: ReportGameData }
+  | { type: "error"; data: SError }
   | { type: "updateGameData"; data: string };
 
 type EventMessage4Manager =
@@ -29,19 +44,7 @@ type EventMessage4Manager =
   | { type: "init"; option: any }
   | {
       type: "gameEvent";
-      option:
-        | { code: "grabObj"; userId: string; objId: string }
-        | { code: "releaseObj"; userId: string; unitId: string }
-        | {
-            code: "startInteractUnit";
-            userId: string;
-            unitId: string;
-          }
-        | {
-            code: "endInteractUnit";
-            userId: string;
-            unitId: string;
-          };
+      option: GameEvent;
     };
 
 function json2emap(data: any) {
@@ -50,6 +53,7 @@ function json2emap(data: any) {
 
 function generateEventSender(ws: WebSocket) {
   return (data: EventMessage4Neos) => {
+    console.info(`send:`, data.type);
     ws.send(json2emap(data));
   };
 }
@@ -65,42 +69,62 @@ app.get("/initNeosData", (req, res) => {
   );
 });
 
-wss.on("connection", (ws, request) => {
-  console.log("on Websocket Connection");
+app.post("/reroll", (req, res) => {
+  const { useEmap = "false" } = req.query;
+  const data = req.body;
+  const rerolledData = reroll(data);
+  res.send(useEmap === "true" ? json2emap(rerolledData) : rerolledData);
+});
 
+wss.on("connection", (ws, request) => {
   const sendEvent = generateEventSender(ws);
   const events = new EventEmitter();
   let gm: undefined | GameManager;
   let gameData: undefined | NeosGameData;
-  const som = new SushiNeosObjectManager();
+  let som: SushiNeosObjectManager | undefined = new SushiNeosObjectManager();
+  let tag: string = uuidv4();
+  let t = performance.now();
+
+  console.info(`connected:${tag}`);
 
   const intervalId = setInterval(() => {
     if (gm) {
-      gm.update(0.1);
-      events.emit("updated");
+      try {
+        const now = performance.now();
+        gm.update((now - t) / 1000);
+        t = now;
+        events.emit("updated");
+      } catch (e) {
+        const id = uuidv4();
+        console.error(`error:update:${tag}+${id}:`, e);
+        sendEvent({
+          type: "error",
+          data: { code: "Update", tag: `${tag}+${id}` },
+        });
+      }
     }
-  }, 250);
+  }, 200);
 
   let updateDone = true;
 
   sendEvent({ type: "clean" });
 
   events.on("updated", () => {
-    if (updateDone && gm) {
+    if (updateDone && gm && som && gameData) {
       if (gm.isFinished) {
-        if (gameData) {
-          const next = nextGameData(gm, gameData);
-          sendEvent({
-            type: "updateGameData",
-            data: json2emap(next),
-          });
-        }
+        const next = nextGameData(gm, gameData);
         sendEvent({
           type: "report",
-          data: reportGame(gm),
+          data: reportGame(gm, next),
+        });
+        sendEvent({
+          type: "updateGameData",
+          data: json2emap(next),
         });
         clearInterval(intervalId);
-        ws.close();
+        setTimeout(() => {
+          ws.close();
+        }, 10000);
       } else {
         const tasks = som.getUpdate(gm);
         sendEvent({ type: "update", tasks });
@@ -111,53 +135,86 @@ wss.on("connection", (ws, request) => {
 
   ws.on("message", (rawData) => {
     let data: undefined | EventMessage4Manager;
+    let str = "";
     try {
-      const str = rawData.toString();
+      str = rawData.toString();
       data = JSON.parse(str);
     } catch (e) {
-      console.error(e);
+      const id = uuidv4();
+      console.error(`error:parse:${tag}+${id}:`, e);
+      sendEvent({
+        type: "error",
+        data: { code: "Parse", tag: `${tag}+${id}` },
+      });
     }
-    if (data) {
-      console.log("received", data.type);
-      switch (data.type) {
-        case "init":
-          gm = newGame(data.option);
-          gameData = data.option;
-        case "resync":
-          som.initialize();
-          sendEvent({ type: "clean" });
-          if (gm) {
-            const tasks = som.getUpdate(gm);
-            sendEvent({ type: "update", tasks });
-            updateDone = false;
-          }
-          break;
-        case "updateFinish":
-          updateDone = true;
-          break;
-        case "gameEvent":
-          if (gm) {
-            try {
-              console.log(data.option);
-              gm.emitGameEvent(data.option);
+    try {
+      if (data && som) {
+        // console.info(`received:${tag}:`, data.type);
+        switch (data.type) {
+          case "init":
+            const errors = getErrors(data.option);
+            console.warn(`warn:parse:${tag}:`, errors);
+            if (errors.messages.length > 0) {
+              sendEvent({
+                type: "error",
+                data: { code: "DataError", ...errors },
+              });
+              break;
+            }
+            gm = newGame(data.option);
+            gameData = data.option;
+          case "resync":
+            som.initialize();
+            sendEvent({ type: "clean" });
+            if (gm) {
               const tasks = som.getUpdate(gm);
               sendEvent({ type: "update", tasks });
               updateDone = false;
-            } catch (e) {
-              console.error(e);
             }
-          }
-          break;
-        case "close":
-          ws.close();
-          break;
+            break;
+          case "updateFinish":
+            updateDone = true;
+            break;
+          case "gameEvent":
+            if (gm) {
+              try {
+                gm.emitGameEvent(data.option);
+                const tasks = som.getUpdate(gm);
+                sendEvent({ type: "update", tasks });
+                updateDone = false;
+              } catch (e) {
+                const id = uuidv4();
+                console.error(`error:gameEvent:${tag}+${id}:`, e);
+                sendEvent({
+                  type: "error",
+                  data: { code: "GameEvent", tag: `${tag}+${id}` },
+                });
+              }
+            }
+            break;
+          case "close":
+            ws.close();
+            break;
+        }
       }
+    } catch (e) {
+      const id = uuidv4();
+      console.error(`error:unknown:${tag}+${id}:`, e);
+      sendEvent({
+        type: "error",
+        data: { code: "Unknown", tag: `${tag}+${id}` },
+      });
     }
   });
-  ws.on("close", () => {
+  ws.on("close", (code, reason) => {
     clearInterval(intervalId);
+    console.info(`close:${tag}:`, code, reason.toString());
+    gm = undefined;
+    gameData = undefined;
+    som = undefined;
   });
 });
+
 // @ts-ignore
 app.on("upgrade", (request, socket, head) => {
   wss.handleUpgrade(request, socket, head, (ws) => {
@@ -165,4 +222,4 @@ app.on("upgrade", (request, socket, head) => {
   });
 });
 
-server.listen(3000);
+server.listen(process.env.PORT || 3000);

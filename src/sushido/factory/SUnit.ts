@@ -15,6 +15,7 @@ import _ from "lodash";
 import { SObj } from "./SObj";
 import { SObjProcessModel } from "../models/SObjModels";
 import { SUser } from "./SUser";
+import { FactoryOperator } from "./FactoryManager";
 
 function processPos(
   pos1: Pos,
@@ -54,21 +55,27 @@ export class SUnit {
   eatCallback: ((unit: SUnit) => void) | undefined;
   eatSpeed: number = 1;
 
-  inputCounts: Map<string, number> = new Map<string, number>();
+  protected inputCounts: Map<string, number> = new Map<string, number>();
+
+  protected saleCountMap: Map<string, number> = new Map();
 
   protected _factoryModel: FactoryModel;
+
+  protected factoryOperator: FactoryOperator;
 
   constructor(
     options: SUnitOptions,
     pos: Pos,
     direction: Direction,
-    _factoryModel: FactoryModel
+    _factoryModel: FactoryModel,
+    factoryOperator: FactoryOperator
   ) {
     this.id = uuidv4();
     this.pos = pos;
     this.options = options;
     this.direction = direction;
     this._factoryModel = _factoryModel;
+    this.factoryOperator = factoryOperator;
   }
 
   public getStackInputItemCount(): number {
@@ -146,16 +153,23 @@ export class SUnit {
     );
   }
 
-  public static updateMoveStart(
-    task: SObjMoveStartTask,
-    generateObj: (code: string) => SObj
-  ) {
+  public static updateMoveStart(task: SObjMoveStartTask) {
     if (task.target) {
       if (
         task.to.isMoreStackable(task.target.code) &&
         task.from.stacks.length > 0 &&
         task.target.id === task.from.stacks[0].id
       ) {
+        // task.target._pos = task.from.pos;
+        // task.target._moveStartTime = task.from.factoryOperator.getT();
+        // task.target._maxMoveTime = 100 / task.speed;
+        // task.target._speed = processPos(
+        //   normalizedPos(
+        //     processPos(task.to.pos, task.from.pos, (a, b) => a - b)
+        //   ),
+        //   [0, 0],
+        //   (a, _b) => (a * task.speed) / 100
+        // );
         task.from.combineCount = 0;
         task.to.inputs.push({
           sObj: task.target,
@@ -168,13 +182,22 @@ export class SUnit {
         //コンベア分岐時の順番用
         const inputCount = task.to.inputCounts.get(task.from.id);
         task.to.inputCounts.set(task.from.id, (inputCount ?? 0) + 1);
-        console.log("hello");
       }
     } else if (
       task.from.options.generation &&
       task.to.isMoreStackable(task.from.options.generation.objCode)
     ) {
-      const newObj = generateObj(task.from.options.generation.objCode);
+      const newObj = task.from.factoryOperator.generateObj(
+        task.from.options.generation.objCode
+      );
+      // newObj._pos = task.from.pos;
+      // newObj._moveStartTime = task.from.factoryOperator.getT();
+      // newObj._maxMoveTime = 100 / task.speed;
+      // newObj._speed = processPos(
+      //   normalizedPos(processPos(task.to.pos, task.from.pos, (a, b) => a - b)),
+      //   [0, 0],
+      //   (a, _b) => (a * task.speed) / 100
+      // );
       task.to.inputs.push({
         sObj: newObj,
         speed: task.speed,
@@ -185,7 +208,6 @@ export class SUnit {
       //コンベア分岐時の順番用
       const inputCount = task.to.inputCounts.get(task.from.id);
       task.to.inputCounts.set(task.from.id, (inputCount ?? 0) + 1);
-      console.log("hello");
     }
   }
 
@@ -260,6 +282,7 @@ export class SUnit {
     );
 
     moveFinishInput.forEach((input) => {
+      input.sObj._maxMoveTime = 0;
       task.to.stacks.push(input.sObj);
     });
 
@@ -268,12 +291,7 @@ export class SUnit {
     }
   }
 
-  public static updateProcess(
-    task: SObjProcessTask,
-    deltaTime: number,
-    deleteObj: (sObj: SObj) => void,
-    addCoin: (coin: number, category: string) => void
-  ) {
+  public static updateProcess(task: SObjProcessTask, deltaTime: number) {
     if (task.target.stacks.length > 0) {
       const stackObjCode = task.target.stacks[0].code;
       const process = task.target.getProcess(stackObjCode);
@@ -311,11 +329,23 @@ export class SUnit {
               task.target.stacks[0].code = process[0].output.code;
               break;
             case "coin":
-              addCoin(
-                process[0].output.value,
+              let saleCount =
+                (task.target.saleCountMap.get(stackObjCode) ?? 0) + 1;
+              if (process[0].processCode !== "taberu") {
+                task.target.saleCountMap.set(stackObjCode, saleCount);
+              }
+              task.target.factoryOperator.coin(
+                Math.floor(
+                  process[0].output.value *
+                    (process[0].processCode === "taberu"
+                      ? 1
+                      : 1 / (saleCount / 3 + 1))
+                ),
+                task.target.id,
                 process[0].processCode === "taberu" ? "eat" : "sale"
               );
-              deleteObj(task.target.stacks[0]);
+              task.target.factoryOperator.sound(task.target.id, "onCoinAdded");
+              task.target.factoryOperator.deleteObj(task.target.stacks[0]);
               task.target.stacks.pop();
               break;
           }
@@ -324,11 +354,7 @@ export class SUnit {
     }
   }
 
-  private static updateCombine(
-    task: SObjCombineTask,
-    deltaTime: number,
-    deleteObj: (sObj: SObj) => void
-  ) {
+  private static updateCombine(task: SObjCombineTask, deltaTime: number) {
     const objs = [
       ...task.target.stacks,
       ...task.target.inputs.map((i) => i.sObj),
@@ -362,7 +388,7 @@ export class SUnit {
           task.target.inputs = task.target.inputs.filter(
             ({ sObj }) => sObj.id !== objs[1].id
           );
-          deleteObj(objs[1]);
+          task.target.factoryOperator.deleteObj(objs[1]);
         }
       }
     }
@@ -376,32 +402,19 @@ export class SUnit {
     }
   }
 
-  public static update(
-    task: SObjTask,
-    deltaTime: number,
-    operator: {
-      generateObj: (code: string) => SObj;
-      deleteObj: (sObj: SObj) => void;
-      addCoin: (coin: number, category: string) => void;
-    }
-  ) {
+  public static update(task: SObjTask, deltaTime: number) {
     switch (task.code) {
       case "moveStart":
-        this.updateMoveStart(task, operator.generateObj);
+        this.updateMoveStart(task);
         break;
       case "moveUpdate":
         this.updateMoveUpdate(task, deltaTime);
         break;
       case "process":
-        this.updateProcess(
-          task,
-          deltaTime,
-          operator.deleteObj,
-          operator.addCoin
-        );
+        this.updateProcess(task, deltaTime);
         break;
       case "combine":
-        this.updateCombine(task, deltaTime, operator.deleteObj);
+        this.updateCombine(task, deltaTime);
         break;
     }
   }

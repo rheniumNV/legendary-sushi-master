@@ -1,11 +1,27 @@
+import _ from "lodash";
 import { Customer, CustomerModel } from "./Customer";
-import { FactoryManager } from "./factory/FactoryManager";
+import { FactoryManager, SoundCode } from "./factory/FactoryManager";
 import { Direction, Pos, SObjModel, SUnitOptions } from "./factory/type";
 
 export type GameEvent =
-  | { code: "grabUnit"; userId: string; unitId: string }
-  | { code: "grabObj"; userId: string; objId: string }
-  | { code: "releaseObj"; userId: string; unitId: string }
+  | {
+      code: "grabUnit";
+      userId: string;
+      unitId: string;
+      handSide?: "RIGHT" | "LEFT";
+    }
+  | {
+      code: "grabObj";
+      userId: string;
+      objId: string;
+      handSide?: "RIGHT" | "LEFT";
+    }
+  | {
+      code: "releaseObj";
+      userId: string;
+      unitId: string;
+      handSide?: "RIGHT" | "LEFT";
+    }
   | {
       code: "startInteractUnit";
       userId: string;
@@ -23,6 +39,7 @@ export type FactoryModel = {
 };
 
 export type GameData = {
+  score: number;
   coin: number;
   dayCount: number;
   menuCodes: string[];
@@ -41,113 +58,6 @@ export type MapData = {
   direction: Direction;
 }[];
 
-export type GameReport = {};
-
-const defaultGame: GameData = {
-  coin: 0,
-  dayCount: 0,
-  menuCodes: ["マグロにぎり", "鉄火巻", "ねぎとろ巻き", "ねぎとろ軍艦"],
-  dayTime: 60,
-  xMax: 6,
-  yMax: 6,
-  customerSpawnRatio: 0.7,
-  customerSpawnInterval: 1,
-  maxCustomerCount: 10,
-  customerModel: [
-    {
-      visualCode: "normal",
-      maxOrderCount: 3,
-      nextOrderRatio: 0.8,
-      paymentScale: 1,
-      patienceScale: 1,
-      eatScale: 1,
-      thinkingOrderScale: 1,
-      pickWeight: 1,
-      moveSpeed: 1,
-    },
-    {
-      visualCode: "dart",
-      maxOrderCount: 2,
-      nextOrderRatio: 0.75,
-      paymentScale: 0.5,
-      patienceScale: 1,
-      eatScale: 2,
-      thinkingOrderScale: 1.5,
-      pickWeight: 0.5,
-      moveSpeed: 1.5,
-    },
-    {
-      visualCode: "relax",
-      maxOrderCount: 5,
-      nextOrderRatio: 0.9,
-      paymentScale: 1.5,
-      patienceScale: 2,
-      eatScale: 0.5,
-      thinkingOrderScale: 0.5,
-      pickWeight: 0.2,
-      moveSpeed: 0.75,
-    },
-  ],
-};
-
-const defaultMap: MapData = [
-  { code: "マグロ箱", pos: [0, 0], direction: 0 },
-  { code: "すめし箱", pos: [1, 0], direction: 0 },
-  { code: "コンベア", pos: [0, 1], direction: 0 },
-  { code: "コンベア", pos: [2, 0], direction: 3 },
-  { code: "コンベア", pos: [2, 1], direction: 0 },
-  { code: "コンベア", pos: [2, 3], direction: 0 },
-  { code: "自動にぎるくん", pos: [2, 2], direction: 0 },
-  { code: "ミキサー", pos: [0, 2], direction: 0 },
-  { code: "コンベア", pos: [0, 3], direction: 0 },
-  { code: "コンベア", pos: [1, 4], direction: 1 },
-  { code: "コンバイナ", pos: [2, 4], direction: 0 },
-  { code: "コンベア", pos: [3, 4], direction: 1 },
-  { code: "のり箱", pos: [4, 4], direction: 0 },
-  { code: "コンバイナ", pos: [0, 4], direction: 0 },
-  { code: "コンベア", pos: [0, 5], direction: 0 },
-  { code: "売却機", pos: [0, 6], direction: 0 },
-  { code: "コンベア", pos: [3, 0], direction: 3 },
-  { code: "コンバイナ", pos: [4, 0], direction: 0 },
-  { code: "コンベア", pos: [5, 0], direction: 3 },
-  { code: "コンバイナ", pos: [6, 0], direction: 0 },
-  { code: "コンベア", pos: [7, 0], direction: 1 },
-  { code: "マグロ箱", pos: [8, 0], direction: 0 },
-  { code: "コンベア", pos: [8, 1], direction: 0 },
-  { code: "ミキサー", pos: [8, 2], direction: 0 },
-  { code: "コンベア", pos: [7, 2], direction: 1 },
-  { code: "コンバイナ", pos: [6, 2], direction: 0 },
-  { code: "コンベア", pos: [5, 2], direction: 3 },
-  { code: "コンベア", pos: [5, 1], direction: 0 },
-  { code: "のり箱", pos: [4, -2], direction: 0 },
-  { code: "コンベア", pos: [4, -1], direction: 0 },
-  { code: "コンベア", pos: [6, -1], direction: 2 },
-  { code: "売却機", pos: [6, -2], direction: 0 },
-  { code: "コンベア", pos: [6, 3], direction: 0 },
-  { code: "売却機", pos: [6, 4], direction: 0 },
-  { code: "えび箱", pos: [2, 6], direction: 0 },
-  { code: "コンベア", pos: [3, 6], direction: 3 },
-  { code: "コンバイナ", pos: [4, 6], direction: 0 },
-  { code: "コンベア", pos: [5, 6], direction: 1 },
-  { code: "てんぷらこ箱", pos: [6, 6], direction: 0 },
-  { code: "コンベア", pos: [4, 7], direction: 0 },
-  { code: "コンベア", pos: [5, 7], direction: 3 },
-  { code: "コンロ", pos: [6, 7], direction: 0 },
-  { code: "コンベア", pos: [7, 7], direction: 3 },
-  { code: "コンバイナ", pos: [8, 7], direction: 0 },
-  { code: "コンベア", pos: [9, 7], direction: 1 },
-  { code: "自動にぎるくん", pos: [10, 7], direction: 0 },
-  { code: "コンベア", pos: [11, 7], direction: 1 },
-  { code: "すめし箱", pos: [12, 7], direction: 0 },
-  { code: "コンベア", pos: [8, 6], direction: 2 },
-  { code: "売却機", pos: [8, 5], direction: 0 },
-  { code: "カウンター", pos: [1, 7], direction: 0 },
-  { code: "カウンター", pos: [2, 7], direction: 0 },
-  { code: "ダイニングテーブル", pos: [2, 9], direction: 0 },
-  { code: "ダイニングテーブル", pos: [3, 9], direction: 0 },
-  { code: "ダイニングテーブル", pos: [4, 9], direction: 0 },
-];
-
 export class GameManager {
   fm: FactoryManager;
   customers: Customer[] = [];
@@ -157,18 +67,28 @@ export class GameManager {
   isFinished: boolean = false;
   gameData: GameData;
   totalCustomerCount: number = 0;
+  customerBoost: number = 0;
+  score: number;
 
-  constructor(gameData: GameData = defaultGame, mapData: MapData = defaultMap) {
+  factoryEventStack: { type: string; data: any }[] = [];
+
+  constructor(gameData: GameData, mapData: MapData) {
     this.gameData = gameData;
     this.fm = new FactoryManager(mapData);
     this.fm.onEvent({
       type: "coin",
       callback: this.onFactoryEventCoin.bind(this),
     });
+    this.fm.onEvent({
+      type: "sound",
+      callback: this.onFactoryEventSound.bind(this),
+    });
     this.t = 0;
+    this.score = gameData.score;
   }
 
   update(deltaTime: number = 0) {
+    this.factoryEventStack = [];
     this.fm.update(deltaTime);
 
     const emptyTables = this.fm.sUnitArray.filter((unit) =>
@@ -181,7 +101,8 @@ export class GameManager {
         emptyTables.filter((table) =>
           this.customers.every((customer) => customer.table?.id !== table.id)
         ),
-        customer.state === "WAITING_TABLE" ? waitingTableIndex++ : 0
+        customer.state === "WAITING_TABLE" ? waitingTableIndex++ : 0,
+        this.gameData.dayTime < this.t
       );
     });
     this.customers = this.customers.filter((customer) => !customer.isDeleted);
@@ -193,39 +114,66 @@ export class GameManager {
     ) {
       if (
         this.customers.length < this.gameData.maxCustomerCount &&
-        Math.random() < this.gameData.customerSpawnRatio
+        Math.random() <
+          (this.customers.length < 3
+            ? 0.5
+            : this.gameData.dayCount > 5 &&
+              this.customers.length < this.gameData.xMax
+            ? 0.1
+            : 0) +
+            this.customerBoost
       ) {
         this.totalCustomerCount++;
+        if (this.customerBoost > 0) {
+          this.customerBoost = 0;
+        }
         this.customers.push(
           new Customer(
-            this.gameData.customerModel[0],
+            _.sample(this.gameData.customerModel) ??
+              this.gameData.customerModel[0],
             this.gameData.menuCodes,
             this.customers.filter(
               (customer) => customer.state === "WAITING_TABLE"
             ).length,
-            this.gameData.xMax
+            this.gameData.xMax,
+            this.boostCustomer.bind(this),
+            this.onFactoryEventSound.bind(this),
+            this.addScore.bind(this)
           )
         );
       }
     }
 
-    if (this.gameData.dayTime < this.t && this.customers.length === 0) {
+    if (
+      this.gameData.dayTime < this.t &&
+      this.customers.length === 0 &&
+      !this.isFinished
+    ) {
+      this.todayCoin += 500;
       this.isFinished = true;
     }
 
     this.t += deltaTime;
   }
 
+  boostCustomer(value: number) {
+    this.customerBoost += value * 0.3;
+  }
+
   emitGameEvent(event: GameEvent) {
     switch (event.code) {
       case "grabUnit":
-        this.fm.grabUnit("RIGHT", event.userId, event.unitId);
+        this.fm.grabUnit(event.handSide ?? "RIGHT", event.userId, event.unitId);
         break;
       case "grabObj":
-        this.fm.grabObj("RIGHT", event.userId, event.objId);
+        this.fm.grabObj(event.handSide ?? "RIGHT", event.userId, event.objId);
         break;
       case "releaseObj":
-        this.fm.releaseObj("RIGHT", event.userId, event.unitId);
+        this.fm.releaseObj(
+          event.handSide ?? "RIGHT",
+          event.userId,
+          event.unitId
+        );
         break;
       case "startInteractUnit":
         this.fm.startInteractUnit(event.userId, event.unitId);
@@ -236,8 +184,25 @@ export class GameManager {
     }
   }
 
-  protected onFactoryEventCoin(value: number, _category: string) {
+  protected onFactoryEventCoin(
+    value: number,
+    targetId: string,
+    category: string
+  ) {
     //TODO: categoryを使う
     this.todayCoin += value;
+    this.score += value;
+    this.factoryEventStack.push({
+      type: "coin",
+      data: { value, targetId, category },
+    });
+  }
+
+  protected addScore(value: number) {
+    this.score += value;
+  }
+
+  protected onFactoryEventSound(targetId: string, code: SoundCode) {
+    this.factoryEventStack.push({ type: "sound", data: { targetId, code } });
   }
 }

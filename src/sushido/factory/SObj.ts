@@ -6,14 +6,12 @@ import { SObjCode, SId, ProcessCode, Pos } from "./type";
 export class SObj {
   id: SId;
   code: SObjCode;
-  processCode: ProcessCode | undefined;
   _parentUnit: SUnit | undefined;
   _pos: Pos | undefined;
+  _moveStartTime: number = 0;
   _speed: Pos | undefined;
   _maxMoveTime: number = 0;
   _grabUser: SUser | undefined;
-
-  protected tasks: any[] = [];
 
   constructor(code: SObjCode) {
     this.id = uuidv4();

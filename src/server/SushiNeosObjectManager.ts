@@ -11,6 +11,8 @@ function formatPos(pos: Pos) {
 }
 
 function unit2NeosObj(unit: SUnit): NeosObj {
+  const debug = "";
+
   return {
     id: unit.id,
     type: "Unit",
@@ -21,6 +23,14 @@ function unit2NeosObj(unit: SUnit): NeosObj {
       progress: {
         type: "float",
         value: unit.stackProgress.toString(),
+      },
+      debug: {
+        type: "string",
+        value: debug,
+      },
+      isGenerator: {
+        type: "bool",
+        value: `${!!unit.options.generation}`,
       },
     },
   };
@@ -37,6 +47,10 @@ function obj2NeosObj(obj: SObj): NeosObj {
         type: "float2",
         value: obj._speed ? formatPos(obj._speed) : "-",
       },
+      // moveStartTime: {
+      //   type: "float",
+      //   value: obj._moveStartTime.toString(),
+      // },
       maxMoveTime: {
         type: "float",
         value: obj._maxMoveTime.toString(),
@@ -44,6 +58,17 @@ function obj2NeosObj(obj: SObj): NeosObj {
       grabUserId: {
         type: "string",
         value: obj._grabUser?.id ?? "",
+      },
+      grabHandSide: {
+        type: "string",
+        value: obj._grabUser
+          ? _.includes(
+              obj._grabUser.leftGrabObjects.map((o) => o.id),
+              obj.id
+            )
+            ? "LEFT"
+            : "RIGHT"
+          : "",
       },
     },
   };
@@ -115,16 +140,18 @@ export class SushiNeosObjectManager {
       ...customerObjs,
     });
 
-    const view = tasks.filter(
-      (task) => task.type === "create" && task.targetType === "Customer"
-    );
+    gm.factoryEventStack.forEach((event) => {
+      tasks.push({ type: "event", eventType: event.type, option: event.data });
+    });
 
-    const status = {
-      create: tasks.filter((v) => v.type === "create").length,
-      update: tasks.filter((v) => v.type === "update").length,
-      delete: tasks.filter((v) => v.type === "delete").length,
-    };
-    console.log(status);
+    // const status = {
+    //   create: tasks.filter((v) => v.type === "create").length,
+    //   update: tasks.filter((v) => v.type === "update").length,
+    //   delete: tasks.filter((v) => v.type === "delete").length,
+    //   event: tasks.filter((v) => v.type === "event").length,
+    // };
+    // console.log(status);
+
     return tasks;
   }
 }

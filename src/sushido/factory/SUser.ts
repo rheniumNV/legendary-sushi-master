@@ -25,6 +25,7 @@ export class SUser {
     if (unit.options.generation) {
       if (grabObjects.length === 0) {
         grabObjects.push(generateObj(unit.options.generation.objCode));
+        this.fm.emitSoundEvent(unit.id, "onPickedUp");
       } else if (grabObjects.length === 1) {
         const combinedObjCode = _.get(this.fm.factoryModel.objModel, [
           unit.options.generation.objCode,
@@ -35,6 +36,7 @@ export class SUser {
         if (combinedObjCode) {
           grabObjects[0].code = combinedObjCode;
         }
+        this.fm.emitSoundEvent(unit.id, "onPickedUp");
       }
     }
   }
@@ -73,8 +75,10 @@ export class SUser {
       if (grabObjects[0] && combinedObjCode) {
         grabObjects[0].code = combinedObjCode;
       } else {
+        obj._maxMoveTime = 0;
         grabObjects.push(obj);
       }
+      this.fm.emitSoundEvent(obj._parentUnit?.id ?? obj.id, "onGrabbed");
     }
   }
 
@@ -91,11 +95,17 @@ export class SUser {
     if (to.stacks.length === 0 && obj && to.isMoreStackable(obj.code)) {
       grabObjects.pop();
       to.stacks.push(obj);
+      this.fm.emitSoundEvent(to.id, "onPlaced");
     } else if (to.stacks.length === 1 && combinedObjCode) {
       grabObjects.pop();
       to.stacks[0].code = combinedObjCode;
+      this.fm.emitSoundEvent(to.id, "onPlaced");
     } else if (obj && to.options.generation?.objCode === obj.code) {
       grabObjects.pop();
+      this.fm.emitSoundEvent(to.id, "onPlaced");
+    } else if (obj && to.options.delete) {
+      grabObjects.pop();
+      this.fm.emitSoundEvent(to.id, "onTrashed");
     }
   }
 }

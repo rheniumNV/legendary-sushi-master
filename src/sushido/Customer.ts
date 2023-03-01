@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { GameManager } from ".";
 import { SUnit } from "./factory/SUnit";
 import { Pos } from "./factory/type";
 import { distancePos, normalizedPos, processPos } from "./util";
@@ -45,11 +46,18 @@ export class Customer {
   _moveVec: Pos = [0, 0];
   _maxMoveTime: number = 0;
 
+  boostCustomerFunc: (value: number) => void;
+  emitSoundEventFunc: GameManager["onFactoryEventSound"];
+  addScore: GameManager["addScore"];
+
   constructor(
     customerModel: CustomerModel,
     menuCodes: string[],
     waitingTableIndex: number,
-    xMax: number
+    xMax: number,
+    boostCustomerFunc: (value: number) => void,
+    emitSoundEventFunc: GameManager["onFactoryEventSound"],
+    addScore: GameManager["addScore"]
   ) {
     this.customerModel = customerModel;
     this.menuCodes = menuCodes;
@@ -58,6 +66,9 @@ export class Customer {
     this.pos = this.entryPos;
     this.targetPos = this.resolveWaitingTablePos(waitingTableIndex);
     this.xMax = xMax;
+    this.boostCustomerFunc = boostCustomerFunc;
+    this.emitSoundEventFunc = emitSoundEventFunc;
+    this.addScore = addScore;
   }
 
   protected resolveWaitingTablePos(waitingTableIndex: number): Pos {
@@ -109,13 +120,18 @@ export class Customer {
     }
     const moveVec = normalizedPos(diff);
     this.pos = processPos(this.pos, moveVec, (a, b) => a + b * realSpeed);
-    this._moveVec = processPos(moveVec, [0, 0], (a, b) => a / 2);
-    this._maxMoveTime = realSpeed > 0 ? abs / realSpeed / 2 : 0;
+    this._moveVec = processPos(
+      moveVec,
+      [0, 0],
+      (a, b) => a * this.customerModel.moveSpeed
+    );
+    this._maxMoveTime = realSpeed > 0 ? abs / this.customerModel.moveSpeed : 0;
   }
 
   protected patienceProcess(deltaTime: number, value: number = 1) {
     this.patience -= value * deltaTime * this.customerModel.patienceScale;
     if (this.patience < 0) {
+      this.boostCustomerFunc(-3);
       this.changeState("GOING_HOME");
     }
   }
@@ -131,7 +147,12 @@ export class Customer {
     }
   }
 
-  update(deltaTime: number, emptyTables: SUnit[], waitingTableIndex: number) {
+  update(
+    deltaTime: number,
+    emptyTables: SUnit[],
+    waitingTableIndex: number,
+    isTimeout: boolean
+  ) {
     this._moveVec = [0, 0];
     this._maxMoveTime = 0;
     switch (this.state) {
@@ -163,6 +184,7 @@ export class Customer {
       case "WAITING_ORDER": //いったんなしで
         this.currentOrder =
           this.menuCodes[Math.floor(Math.random() * this.menuCodes.length)];
+        this.emitSoundEventFunc(this.id, "onOrdered");
         this.changeState("WAITING_FOOD");
         break;
       case "WAITING_FOOD":
@@ -180,7 +202,25 @@ export class Customer {
         }
         if (!this.table?.eatMenuCode) {
           this.orderCount += 1;
-          if (this.orderCount < this.customerModel.maxOrderCount) {
+          this.boostCustomerFunc(
+            this.patience > 80
+              ? 2
+              : this.patience > 60
+              ? 1
+              : this.patience > 30
+              ? 0
+              : this.patience > 10
+              ? -1
+              : -2
+          );
+          if (this.patience > 80) {
+            this.addScore(30);
+          }
+          this.boostCustomerFunc;
+          if (
+            !isTimeout &&
+            this.orderCount < this.customerModel.maxOrderCount
+          ) {
             if (Math.random() < this.customerModel.nextOrderRatio) {
               this.changeState("THINKING_ORDER");
             } else {

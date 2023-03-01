@@ -5,11 +5,11 @@
   "main": "build/index.js",
   "scripts": {
     "start": "node dist/server/main.js",
-    "dev": "webpack-dev-server",
-    "dev:neos": "ts-node src/server/main.ts",
-    "build:tsc": "tsc -p \"./src/server\" --outDir \"./dist\"",
-    "build": "webpack",
-    "build:watch": "webpack --watch"
+    "dev": "ts-node src/server/main.ts",
+    "dev:web": "webpack-dev-server",
+    "build": "tsc -p \"./src/server\" --outDir \"./dist\"",
+    "build:web": "webpack",
+    "build:web:watch": "webpack --watch"
   },
   "keywords": [],
   "author": "rhenium",

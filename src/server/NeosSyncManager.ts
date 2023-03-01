@@ -22,7 +22,7 @@ export type Task =
       options: OptionsArray;
     }
   | { type: "delete"; targetId: string }
-  | { type: "event"; pulseName: string; option: string };
+  | { type: "event"; eventType: string; option: any };
 
 export type NeosState = { [key: string]: NeosObj };
 
