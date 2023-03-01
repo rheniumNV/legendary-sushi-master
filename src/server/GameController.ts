@@ -51,8 +51,8 @@ const unitCodeList: { code: string; prise: number; weight: number }[] = [
   { code: "ミキサー", prise: 500, weight: 1 },
   { code: "コンバイナ", prise: 600, weight: 1 },
   { code: "コンベア", prise: 500, weight: 2 },
-  { code: "直角コンベアR", prise: 900, weight: 1.5 },
-  { code: "直角コンベアL", prise: 900, weight: 1.5 },
+  { code: "直角コンベアR", prise: 900, weight: 1 },
+  { code: "直角コンベアL", prise: 900, weight: 1 },
   { code: "売却機", prise: 2000, weight: 0.5 },
   { code: "コンベアミキサー", prise: 4000, weight: 0.5 },
   { code: "コンベア自動にぎるくん", prise: 5000, weight: 0.5 },
@@ -605,11 +605,11 @@ export function nextGameData(
     data.day === 9
       ? score > 80000
         ? "SS"
-        : score > 30000
+        : score > 40000
         ? "S"
-        : score > 10000
+        : score > 20000
         ? "A"
-        : score > 5000
+        : score > 10000
         ? "B"
         : "C"
       : data.rank;
