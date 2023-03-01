@@ -137,7 +137,8 @@ export class GameManager {
             ).length,
             this.gameData.xMax,
             this.boostCustomer.bind(this),
-            this.onFactoryEventSound.bind(this)
+            this.onFactoryEventSound.bind(this),
+            this.addScore.bind(this)
           )
         );
       }
@@ -195,6 +196,10 @@ export class GameManager {
       type: "coin",
       data: { value, targetId, category },
     });
+  }
+
+  protected addScore(value: number) {
+    this.score += value;
   }
 
   protected onFactoryEventSound(targetId: string, code: SoundCode) {

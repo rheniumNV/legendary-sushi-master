@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { v4 as uuidv4 } from "uuid";
 import { GameData, GameManager, MapData } from "../sushido";
 import { Direction, Pos } from "../sushido/factory/type";
 import { SushiUnitModels } from "../sushido/models/SUnitModels";
@@ -21,6 +20,8 @@ export type NeosGameData = {
   score: number;
   coin: number;
   day: number;
+  rankScore: number;
+  rank: string;
   menuCodes: string[];
   newMenuCode: string;
   lostCount: number;
@@ -35,15 +36,12 @@ export type NeosGameData = {
   }[];
 };
 
-export type NextGameData = {
-  newMenuCodes: { code: string; needUnits: string[] }[];
-  shopUnitCodes: { code: string; prise: number }[];
-};
-
 export type ReportGameData = {
   todayCoin: number;
   totalCustomerCount: number;
   score: number;
+  rankScore: number;
+  rank: string;
 };
 
 const unitCodeList: { code: string; prise: number; weight: number }[] = [
@@ -83,6 +81,11 @@ type MenuConfig = {
 };
 
 const menuList: MenuConfig[] = [
+  {
+    code: "マグロにぎり",
+    level: 1,
+    requireUnit: ["マグロ箱", "カウンター", "すめし箱"],
+  },
   {
     code: "サーモンにぎり",
     level: 1,
@@ -273,6 +276,8 @@ export function newNeosGameData(): NeosGameData {
     score: 0,
     coin: 0,
     day: 0,
+    rankScore: 0,
+    rank: "",
     menuCodes: ["マグロにぎり"],
     newMenuCode: "",
     lostCount: 0,
@@ -282,13 +287,13 @@ export function newNeosGameData(): NeosGameData {
     mapData: [
       {
         code: "マグロ箱",
-        pos: [2, 5],
+        pos: [3, 5],
         direction: 2,
         prise: 0,
       },
       {
         code: "すめし箱",
-        pos: [1, 5],
+        pos: [2, 5],
         direction: 2,
         prise: 0,
       },
@@ -306,50 +311,38 @@ export function newNeosGameData(): NeosGameData {
       },
       {
         code: "カウンター",
-        pos: [1, 3],
-        direction: 1,
-        prise: 0,
-      },
-      {
-        code: "カウンター",
-        pos: [1, 1],
-        direction: 1,
-        prise: 0,
-      },
-      {
-        code: "カウンター",
-        pos: [5, 4],
-        direction: 1,
-        prise: 0,
-      },
-      {
-        code: "カウンター",
-        pos: [2, 1],
+        pos: [3, 3],
         direction: 3,
         prise: 0,
       },
       {
         code: "カウンター",
-        pos: [5, 3],
+        pos: [3, 1],
+        direction: 3,
+        prise: 0,
+      },
+      {
+        code: "カウンター",
+        pos: [2, 1],
         direction: 1,
         prise: 0,
       },
       {
         code: "カウンター",
         pos: [2, 3],
-        direction: 3,
+        direction: 1,
         prise: 0,
       },
       {
         code: "カウンター",
         pos: [2, 2],
-        direction: 3,
+        direction: 1,
         prise: 0,
       },
       {
         code: "カウンター",
-        pos: [1, 2],
-        direction: 1,
+        pos: [3, 2],
+        direction: 3,
         prise: 0,
       },
       {
@@ -422,9 +415,46 @@ function getRequireUnitCodes(menuCodes: string[]) {
   );
 }
 
-export function isValid(data: NeosGameData) {
+export type DataError = {
+  code: string;
+  message: { en: string; ja: string };
+  pointMessages: { pos: Pos; en: string; ja: string }[];
+};
+
+export type NeosDataError = {
+  messages: { en: string; ja: string }[];
+  pointMessages: { pos: Pos; en: string; ja: string }[];
+};
+
+export function getErrors(data: NeosGameData): NeosDataError {
+  let errors: DataError[] = [];
+  const xMax = 6 + data.xLevel * 3;
+  const yMax = 6 + data.yLevel * 3;
+
+  const mapUnits = data.mapData.filter((unit) => unit.prise === 0);
+  const mapActiveUnit = mapUnits.filter(
+    (unit) =>
+      unit.pos[0] >= 0 &&
+      unit.pos[1] >= 0 &&
+      unit.pos[0] < xMax &&
+      unit.pos[1] < yMax
+  );
+
   //level
-  if (data.xLevel > 2 || data.yLevel > 2) {
+  if (
+    data.xLevel > 2 ||
+    data.yLevel > 2 ||
+    data.xLevel < 0 ||
+    data.yLevel < 0
+  ) {
+    errors.push({
+      code: "SpaceLevelError",
+      message: {
+        en: "The store is unjustly large.",
+        ja: "お店が不正な広さです",
+      },
+      pointMessages: [],
+    });
   }
 
   //unknown unit
@@ -432,28 +462,79 @@ export function isValid(data: NeosGameData) {
     (unit) => !_.includes(allUnitCodes, unit.code)
   );
   if (unknownUnits.length > 0) {
+    errors.push({
+      code: "UnknownUnitError",
+      message: {
+        en: "There is an unknown unit.",
+        ja: "不明なユニットがあります",
+      },
+      pointMessages: unknownUnits.map((unit) => ({
+        pos: unit.pos,
+        en: "Unknown Unit.",
+        ja: "不明なユニットです",
+      })),
+    });
+  }
+
+  //unit stacks
+  const stackUnits = _.filter(
+    _.groupBy(mapActiveUnit, ({ pos }) => formatPos(pos)),
+    (list) => list.length > 1
+  );
+  if (stackUnits.length > 0) {
+    errors.push({
+      code: "UnitStackError",
+      message: {
+        en: "There are overlapping units.",
+        ja: "重なっているユニットがあります",
+      },
+      pointMessages: stackUnits.map((units) => ({
+        pos: units[0].pos,
+        en: "This unit is overlapping.",
+        ja: "ユニットが重なっています",
+      })),
+    });
   }
 
   //lost require unit
-  const xMax = 6 + data.xLevel * 3;
-  const yMax = 6 + data.yLevel * 3;
-  const mapUnits = data.mapData.filter((unit) => unit.prise === 0);
   const requireUnitCodes = getRequireUnitCodes(data.menuCodes);
-  const lostRequireUnitCodes = requireUnitCodes.filter((code) =>
-    mapUnits.some(
-      (unit) =>
-        unit.code === code &&
-        unit.pos[0] >= 0 &&
-        unit.pos[1] >= 0 &&
-        unit.pos[0] < xMax &&
-        unit.pos[1] < yMax
-    )
+  const lostRequireUnitCodes = requireUnitCodes.filter(
+    (code) =>
+      !mapUnits.some(
+        (unit) =>
+          unit.code === code &&
+          unit.pos[0] >= 0 &&
+          unit.pos[1] >= 0 &&
+          unit.pos[0] < xMax &&
+          unit.pos[1] < yMax
+      )
   );
   if (lostRequireUnitCodes.length > 0) {
-    lostRequireUnitCodes.map((code) => {
-      const units = mapUnits.filter((unit) => unit.code === code);
+    errors.push({
+      code: "LostUnitError",
+      message: {
+        en: "There are some menus that cannot be made due to lack of units.",
+        ja: "ユニットが足りず作れないメニューがあります",
+      },
+      pointMessages: lostRequireUnitCodes
+        .map((code) =>
+          mapUnits
+            .filter((unit) => unit.code === code)
+            .map((unit) => ({
+              pos: unit.pos,
+              en: "There are menu items that cannot be made without this unit.",
+              ja: `このユニットがないと作れないメニューがあります`,
+            }))
+        )
+        .flatMap((v) => v),
     });
   }
+  return {
+    messages: errors.map(({ message }) => message),
+    pointMessages: errors
+      .map(({ pointMessages }) => pointMessages)
+      .flatMap((v) => v),
+  };
 }
 
 export function nextGameData(
@@ -518,10 +599,27 @@ export function nextGameData(
       .flatMap((v) => v),
   ];
 
+  const score = gm.score;
+  const rankScore = data.day === 9 ? score : data.rankScore;
+  const rank =
+    data.day === 9
+      ? score > 80000
+        ? "SS"
+        : score > 30000
+        ? "S"
+        : score > 10000
+        ? "A"
+        : score > 5000
+        ? "B"
+        : "C"
+      : data.rank;
+
   return {
     ...data,
-    score: gm.score,
+    score,
     coin,
+    rankScore,
+    rank,
     day: data.day + 1,
     menuCodes,
     newMenuCode: newMenu?.code ?? "",
@@ -575,7 +673,7 @@ export function convertNeosGameData(data: NeosGameData): [GameData, MapData] {
       coin: data.coin,
       dayCount: data.day,
       menuCodes: data.menuCodes,
-      dayTime: 60,
+      dayTime: Math.min(Math.max(60, data.day * 5 + 40), 180),
       xMax: xMax,
       yMax: yMax,
       customerSpawnRatio: 0.3,
@@ -703,6 +801,39 @@ export function convertNeosGameData(data: NeosGameData): [GameData, MapData] {
           pickWeight: 0.5,
           moveSpeed: 1.5,
         },
+        {
+          visualCode: "ぞぞかす",
+          maxOrderCount: 3,
+          nextOrderRatio: 0.3,
+          paymentScale: 1,
+          patienceScale: 2,
+          eatScale: 1,
+          thinkingOrderScale: 2,
+          pickWeight: 0.5,
+          moveSpeed: 1.7,
+        },
+        {
+          visualCode: "ぐへへへ",
+          maxOrderCount: 3,
+          nextOrderRatio: 0.6,
+          paymentScale: 1.1,
+          patienceScale: 0.6,
+          eatScale: 0.8,
+          thinkingOrderScale: 1,
+          pickWeight: 0.5,
+          moveSpeed: 1.5,
+        },
+        {
+          visualCode: "まちよう",
+          maxOrderCount: 4,
+          nextOrderRatio: 0.4,
+          paymentScale: 1.1,
+          patienceScale: 0.5,
+          eatScale: 1,
+          thinkingOrderScale: 1,
+          pickWeight: 0.5,
+          moveSpeed: 0.8,
+        },
       ],
     },
     [
@@ -731,10 +862,15 @@ export function newGame(data: NeosGameData) {
   return new GameManager(...convertNeosGameData(data));
 }
 
-export function reportGame(gm: GameManager): ReportGameData {
+export function reportGame(
+  gm: GameManager,
+  data: NeosGameData
+): ReportGameData {
   return {
     todayCoin: gm.todayCoin,
     totalCustomerCount: gm.totalCustomerCount,
     score: gm.score,
+    rankScore: data.rankScore,
+    rank: data.rank,
   };
 }

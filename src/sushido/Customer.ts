@@ -48,6 +48,7 @@ export class Customer {
 
   boostCustomerFunc: (value: number) => void;
   emitSoundEventFunc: GameManager["onFactoryEventSound"];
+  addScore: GameManager["addScore"];
 
   constructor(
     customerModel: CustomerModel,
@@ -55,7 +56,8 @@ export class Customer {
     waitingTableIndex: number,
     xMax: number,
     boostCustomerFunc: (value: number) => void,
-    emitSoundEventFunc: GameManager["onFactoryEventSound"]
+    emitSoundEventFunc: GameManager["onFactoryEventSound"],
+    addScore: GameManager["addScore"]
   ) {
     this.customerModel = customerModel;
     this.menuCodes = menuCodes;
@@ -66,6 +68,7 @@ export class Customer {
     this.xMax = xMax;
     this.boostCustomerFunc = boostCustomerFunc;
     this.emitSoundEventFunc = emitSoundEventFunc;
+    this.addScore = addScore;
   }
 
   protected resolveWaitingTablePos(waitingTableIndex: number): Pos {
@@ -210,6 +213,9 @@ export class Customer {
               ? -1
               : -2
           );
+          if (this.patience > 80) {
+            this.addScore(100);
+          }
           this.boostCustomerFunc;
           if (
             !isTimeout &&

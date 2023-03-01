@@ -8,6 +8,8 @@ import EventEmitter from "events";
 import { SushiNeosObjectManager } from "./SushiNeosObjectManager";
 import { Task } from "./NeosSyncManager";
 import {
+  getErrors,
+  NeosDataError,
   NeosGameData,
   newGame,
   newNeosGameData,
@@ -20,15 +22,11 @@ import { Pos } from "../sushido/factory/type";
 import { v4 as uuidv4 } from "uuid";
 
 type SError =
-  | { code: "LimitError"; messageEn: string; messageJa: string }
+  | ({
+      code: "DataError";
+    } & NeosDataError)
   | {
-      code: "MapError";
-      messageEn: string;
-      messageJa: string;
-      errorPoints: Pos[];
-    }
-  | {
-      code: "GameEvent" | "Update" | "Parse";
+      code: "GameEvent" | "Update" | "Parse" | "Unknown";
       tag: string;
     };
 
@@ -55,6 +53,7 @@ function json2emap(data: any) {
 
 function generateEventSender(ws: WebSocket) {
   return (data: EventMessage4Neos) => {
+    console.info(`send:`, data.type);
     ws.send(json2emap(data));
   };
 }
@@ -113,11 +112,11 @@ wss.on("connection", (ws, request) => {
   events.on("updated", () => {
     if (updateDone && gm && som && gameData) {
       if (gm.isFinished) {
+        const next = nextGameData(gm, gameData);
         sendEvent({
           type: "report",
-          data: reportGame(gm),
+          data: reportGame(gm, next),
         });
-        const next = nextGameData(gm, gameData);
         sendEvent({
           type: "updateGameData",
           data: json2emap(next),
@@ -148,50 +147,68 @@ wss.on("connection", (ws, request) => {
         data: { code: "Parse", tag: `${tag}+${id}` },
       });
     }
-    if (data && som) {
-      // console.info(`received:${tag}:`, data.type);
-      switch (data.type) {
-        case "init":
-          gm = newGame(data.option);
-          gameData = data.option;
-        case "resync":
-          som.initialize();
-          sendEvent({ type: "clean" });
-          if (gm) {
-            const tasks = som.getUpdate(gm);
-            sendEvent({ type: "update", tasks });
-            updateDone = false;
-          }
-          break;
-        case "updateFinish":
-          updateDone = true;
-          break;
-        case "gameEvent":
-          if (gm) {
-            try {
-              gm.emitGameEvent(data.option);
+    try {
+      if (data && som) {
+        // console.info(`received:${tag}:`, data.type);
+        switch (data.type) {
+          case "init":
+            const errors = getErrors(data.option);
+            console.warn(`warn:parse:${tag}:`, errors);
+            if (errors.messages.length > 0) {
+              sendEvent({
+                type: "error",
+                data: { code: "DataError", ...errors },
+              });
+              break;
+            }
+            gm = newGame(data.option);
+            gameData = data.option;
+          case "resync":
+            som.initialize();
+            sendEvent({ type: "clean" });
+            if (gm) {
               const tasks = som.getUpdate(gm);
               sendEvent({ type: "update", tasks });
               updateDone = false;
-            } catch (e) {
-              const id = uuidv4();
-              console.error(`error:gameEvent:${tag}+${id}:`, e);
-              sendEvent({
-                type: "error",
-                data: { code: "GameEvent", tag: `${tag}+${id}` },
-              });
             }
-          }
-          break;
-        case "close":
-          ws.close();
-          break;
+            break;
+          case "updateFinish":
+            updateDone = true;
+            break;
+          case "gameEvent":
+            if (gm) {
+              try {
+                gm.emitGameEvent(data.option);
+                const tasks = som.getUpdate(gm);
+                sendEvent({ type: "update", tasks });
+                updateDone = false;
+              } catch (e) {
+                const id = uuidv4();
+                console.error(`error:gameEvent:${tag}+${id}:`, e);
+                sendEvent({
+                  type: "error",
+                  data: { code: "GameEvent", tag: `${tag}+${id}` },
+                });
+              }
+            }
+            break;
+          case "close":
+            ws.close();
+            break;
+        }
       }
+    } catch (e) {
+      const id = uuidv4();
+      console.error(`error:unknown:${tag}+${id}:`, e);
+      sendEvent({
+        type: "error",
+        data: { code: "Unknown", tag: `${tag}+${id}` },
+      });
     }
   });
   ws.on("close", (code, reason) => {
     clearInterval(intervalId);
-    console.info(`close:${tag}:`, code, reason);
+    console.info(`close:${tag}:`, code, reason.toString());
     gm = undefined;
     gameData = undefined;
     som = undefined;

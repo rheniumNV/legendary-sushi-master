@@ -16,7 +16,6 @@ import { SObj } from "./SObj";
 import { SObjProcessModel } from "../models/SObjModels";
 import { SUser } from "./SUser";
 import { FactoryOperator } from "./FactoryManager";
-import { normalizedPos } from "../util";
 
 function processPos(
   pos1: Pos,
