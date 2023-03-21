@@ -53,7 +53,7 @@ function json2emap(data: any) {
 
 function generateEventSender(ws: WebSocket) {
   return (data: EventMessage4Neos) => {
-    console.info(`send:`, data.type);
+    // console.info(`send:`, data.type);
     ws.send(json2emap(data));
   };
 }

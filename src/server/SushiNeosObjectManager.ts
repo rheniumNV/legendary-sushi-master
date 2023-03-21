@@ -152,6 +152,8 @@ export class SushiNeosObjectManager {
     // };
     // console.log(status);
 
+    gm.clear();
+
     return tasks;
   }
 }

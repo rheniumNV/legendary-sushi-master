@@ -87,6 +87,10 @@ export class GameManager {
     this.score = gameData.score;
   }
 
+  clear() {
+    this.factoryEventStack = [];
+  }
+
   update(deltaTime: number = 0) {
     this.factoryEventStack = [];
     this.fm.update(deltaTime);
