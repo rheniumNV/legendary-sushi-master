@@ -146,6 +146,7 @@ export function App() {
                 code: "releaseObj",
                 userId,
                 unitId: id,
+                handSide: "RIGHT",
               });
             }}
             startInteract={() => {
@@ -174,6 +175,7 @@ export function App() {
             grabFunc={(id: string) => {
               gameManager.emitGameEvent({
                 code: "grabObj",
+                handSide: "RIGHT",
                 userId,
                 objId: id,
               });

@@ -151,18 +151,22 @@ export class FactoryManager {
       SUnit.preUpdate(unit, nearUnits).forEach((task) => this.tasks.push(task));
     });
 
-    this.tasks = _.sortBy(this.tasks, (task) => {
-      const { code } = task;
-      //TODO: 分岐する際に交互に分かれるようにする。
-      // const inputCount =
-      //   task.code === "moveStart"
-      //     ? task.to.inputCounts.get(task.from.id) ?? 0
-      //     : 0;
-      // if (inputCount !== 0 && task.code === "moveStart") {
-      //   console.log(task.code, task.to.id, inputCount);
-      // }
-      return [code /*, -inputCount*/];
-    }).reverse();
+    this.tasks = _(this.tasks)
+      .map((task) => {
+        const { code } = task;
+        // 分岐する際に交互に分かれるようにtaskを並べ替える。
+        const inputCount =
+          task.code === "moveStart"
+            ? task.from.inputCounts.get(task.to.id) ?? 0
+            : 0;
+        if (inputCount !== 0 && task.code === "moveStart") {
+          console.log(task.code, task.to.id, inputCount);
+        }
+        return { task, code, inputCount };
+      })
+      .orderBy(["code", "inputCount"], ["desc", "asc"])
+      .map(({ task }) => task)
+      .value();
 
     this.tasks.forEach((task) => {
       SUnit.update(task, deltaTime * 5);

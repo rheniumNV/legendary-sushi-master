@@ -567,6 +567,10 @@ export function nextGameData(
     }
     return unit;
   });
+
+  const today = new Date();
+  const isAprilFool = today.getMonth() === 3 && today.getDate() === 1;
+
   const mapData = [
     ...(newMenu
       ? joinUnits(
@@ -583,7 +587,10 @@ export function nextGameData(
             }))
         )
       : prevMapData),
-    ...bluePrintCodes
+    ...[
+      ...bluePrintCodes,
+      ...(isAprilFool ? [{ code: "ネオロイド箱", prise: 100 }] : []),
+    ]
       .map((unit, i): NeosGameData["mapData"] => {
         return unit
           ? [
