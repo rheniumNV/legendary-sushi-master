@@ -53,7 +53,7 @@ function json2emap(data: any) {
 
 function generateEventSender(ws: WebSocket) {
   return (data: EventMessage4Neos) => {
-    console.info(`send:`, data.type);
+    // console.info(`send:`, data.type);
     ws.send(json2emap(data));
   };
 }
@@ -127,6 +127,7 @@ wss.on("connection", (ws, request) => {
         }, 10000);
       } else {
         const tasks = som.getUpdate(gm);
+        gm.clear();
         sendEvent({ type: "update", tasks });
         updateDone = false;
       }
