@@ -17,7 +17,7 @@ export function SUserView({ user }: { user: SUser }) {
 
   return (
     <div>
-      {user.grabObjects.map((obj) => (
+      {user.rightGrabObjects.map((obj) => (
         <div
           css={[
             directPosCss({ x: mouseX - 25, y: mouseY - 25 }),
