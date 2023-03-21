@@ -127,7 +127,6 @@ wss.on("connection", (ws, request) => {
         }, 10000);
       } else {
         const tasks = som.getUpdate(gm);
-        gm.clear();
         sendEvent({ type: "update", tasks });
         updateDone = false;
       }
