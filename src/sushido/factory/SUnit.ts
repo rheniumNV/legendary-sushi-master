@@ -55,7 +55,7 @@ export class SUnit {
   eatCallback: ((unit: SUnit) => void) | undefined;
   eatSpeed: number = 1;
 
-  protected inputCounts: Map<string, number> = new Map<string, number>();
+  inputCounts: Map<string, number> = new Map<string, number>();
 
   protected saleCountMap: Map<string, number> = new Map();
 
@@ -180,8 +180,8 @@ export class SUnit {
         task.from.stacks.pop();
 
         //コンベア分岐時の順番用
-        const inputCount = task.to.inputCounts.get(task.from.id);
-        task.to.inputCounts.set(task.from.id, (inputCount ?? 0) + 1);
+        const inputCount = task.from.inputCounts.get(task.to.id);
+        task.from.inputCounts.set(task.to.id, (inputCount ?? 0) + 1);
       }
     } else if (
       task.from.options.generation &&
@@ -206,8 +206,8 @@ export class SUnit {
       });
 
       //コンベア分岐時の順番用
-      const inputCount = task.to.inputCounts.get(task.from.id);
-      task.to.inputCounts.set(task.from.id, (inputCount ?? 0) + 1);
+      const inputCount = task.from.inputCounts.get(task.to.id);
+      task.from.inputCounts.set(task.to.id, (inputCount ?? 0) + 1);
     }
   }
 
@@ -228,12 +228,23 @@ export class SUnit {
     const fromProcess = target ? from.getProcess(target.code) : [];
     const fromCombine = target ? from.getCombineRecipe(target.code) : {};
 
-    if (
-      !fromProcess.some((p) => !p.requireInteract) && //移動元で処理するものはない
-      (Object.keys(fromCombine).length === 0 ||
-        from.combineCount >= (from.options.combiner?.count ?? 0)) && //移動元でコンバインするものはない
-      to.isMoreStackable(target?.code ?? from.options.generation?.objCode ?? "") //移動先のスタック数に余裕はある
-    ) {
+    //移動元になにかある
+    const hasObjFrom = target || from.options.generation;
+
+    //移動元で処理するものはない
+    const nonProcessFrom = !fromProcess.some((p) => !p.requireInteract);
+
+    //移動元でコンバインするものはない
+    const nonCombineFrom =
+      Object.keys(fromCombine).length === 0 ||
+      from.combineCount >= (from.options.combiner?.count ?? 0);
+
+    //移動先のスタック数に余裕はある
+    const isMoreStackableTo = to.isMoreStackable(
+      target?.code ?? from.options.generation?.objCode ?? ""
+    );
+
+    if (hasObjFrom && nonProcessFrom && nonCombineFrom && isMoreStackableTo) {
       const diffDirection = getDirection(to.pos, from.pos);
       if (diffDirection !== undefined) {
         const fromTransporter = _.get(
