@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { v4 as uuidv4 } from "uuid";
 import { GameManager } from ".";
 import { SUnit } from "./factory/SUnit";
@@ -157,8 +158,9 @@ export class Customer {
     this._maxMoveTime = 0;
     switch (this.state) {
       case "WAITING_TABLE":
-        if (emptyTables.length > 0) {
-          this.table = emptyTables[0];
+        const targetTable = _.sample(emptyTables);
+        if (targetTable) {
+          this.table = targetTable;
           this.targetPos = this.table.pos;
           this.changeState("GOING_TABLE");
           break;
