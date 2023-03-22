@@ -589,7 +589,7 @@ export function nextGameData(
       : prevMapData),
     ...[
       ...bluePrintCodes,
-      ...(isAprilFool ? [{ code: "ネオロイド箱", prise: 100 }] : []),
+      ...(isAprilFool ? [{ code: "ネオロイド箱", prise: 200 }] : []),
     ]
       .map((unit, i): NeosGameData["mapData"] => {
         return unit

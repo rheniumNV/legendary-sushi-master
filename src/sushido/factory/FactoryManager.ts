@@ -159,9 +159,9 @@ export class FactoryManager {
           task.code === "moveStart"
             ? task.from.inputCounts.get(task.to.id) ?? 0
             : 0;
-        if (inputCount !== 0 && task.code === "moveStart") {
-          console.log(task.code, task.to.id, inputCount);
-        }
+        // if (inputCount !== 0 && task.code === "moveStart") {
+        //   console.log(task.code, task.to.id, inputCount);
+        // }
         return { task, code, inputCount };
       })
       .orderBy(["code", "inputCount"], ["desc", "asc"])

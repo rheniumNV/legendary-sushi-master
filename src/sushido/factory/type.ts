@@ -55,7 +55,9 @@ export type SUnitOptions = {
     count: number;
     speed: number;
   };
-  delete?: boolean;
+  delete?: {
+    addCoin: number;
+  };
   titleEn?: string;
   descriptionJa?: string;
   descriptionEn?: string;
