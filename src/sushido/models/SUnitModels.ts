@@ -314,7 +314,7 @@ export const ダイニングテーブル: SUnitOptions = {
 export const ゴミ箱: SUnitOptions = {
   code: "ゴミ箱",
   stack: { maxCount: 0 },
-  delete: true,
+  delete: { addCoin: 0 },
   titleEn: "",
   descriptionEn: "",
   descriptionJa: "誤って作成した場合に破棄する箱",
@@ -323,7 +323,7 @@ export const ゴミ箱: SUnitOptions = {
 export const ネオロイド箱: SUnitOptions = {
   code: "ネオロイド箱",
   stack: { maxCount: 0 },
-  delete: true,
+  delete: { addCoin: 1 },
   titleEn: "",
   descriptionEn: "",
   descriptionJa: "",

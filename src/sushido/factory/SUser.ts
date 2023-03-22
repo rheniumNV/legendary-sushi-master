@@ -106,6 +106,9 @@ export class SUser {
     } else if (obj && to.options.delete) {
       grabObjects.pop();
       this.fm.emitSoundEvent(to.id, "onTrashed");
+      if (to.options.delete.addCoin > 0) {
+        this.fm.addCoin(to.options.delete.addCoin, to.id, "recycle");
+      }
     }
   }
 }
