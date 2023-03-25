@@ -157,10 +157,10 @@ export const 直角コンベアL_Lv2: SUnitOptions = {
   code: "直角コンベアL_Lv2",
   stack: { maxCount: 1 },
   transporter: [
-    { type: "input", speed: 10 },
+    { type: "input", speed: 20 },
     undefined,
     undefined,
-    { type: "output", speed: 10 },
+    { type: "output", speed: 20 },
   ],
   titleEn: "",
   descriptionEn: "",
@@ -170,8 +170,8 @@ export const 直角コンベアR_Lv2: SUnitOptions = {
   code: "直角コンベアR_Lv2",
   stack: { maxCount: 1 },
   transporter: [
-    { type: "input", speed: 10 },
-    { type: "output", speed: 10 },
+    { type: "input", speed: 20 },
+    { type: "output", speed: 20 },
     undefined,
     undefined,
   ],
