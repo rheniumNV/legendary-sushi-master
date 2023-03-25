@@ -139,7 +139,46 @@ export const 直角コンベアR: SUnitOptions = {
   descriptionEn: "",
   descriptionJa: "右に曲がるコンベア",
 };
+export const コンベア_Lv2: SUnitOptions = {
+  code: "コンベア_Lv2",
+  stack: { maxCount: 1 },
+  transporter: [
+    { type: "input", speed: 20 },
+    undefined,
+    { type: "output", speed: 20 },
+    undefined,
+  ],
+  titleEn: "",
+  descriptionEn: "",
+  descriptionJa: "矢印の方向にを自動的に移動させる",
+};
 
+export const 直角コンベアL_Lv2: SUnitOptions = {
+  code: "直角コンベアL_Lv2",
+  stack: { maxCount: 1 },
+  transporter: [
+    { type: "input", speed: 10 },
+    undefined,
+    undefined,
+    { type: "output", speed: 10 },
+  ],
+  titleEn: "",
+  descriptionEn: "",
+  descriptionJa: "左に曲がるコンベア",
+};
+export const 直角コンベアR_Lv2: SUnitOptions = {
+  code: "直角コンベアR_Lv2",
+  stack: { maxCount: 1 },
+  transporter: [
+    { type: "input", speed: 10 },
+    { type: "output", speed: 10 },
+    undefined,
+    undefined,
+  ],
+  titleEn: "",
+  descriptionEn: "",
+  descriptionJa: "右に曲がるコンベア",
+};
 export const カウンター: SUnitOptions = {
   code: "カウンター",
   stack: { maxCount: 1 },
@@ -341,7 +380,6 @@ export const SushiUnitModels: SUnitModel = {
   すめし箱,
   瓶箱,
   アボカド箱,
-  コンベア,
   カウンター,
   コンロ,
   自動にぎるくん,
@@ -353,8 +391,12 @@ export const SushiUnitModels: SUnitModel = {
   コンバイナ,
   売却機,
   ダイニングテーブル,
+  コンベア,
   直角コンベアL,
   直角コンベアR,
+  コンベア_Lv2,
+  直角コンベアL_Lv2,
+  直角コンベアR_Lv2,
   ゴミ箱,
   ネオロイド箱,
 };

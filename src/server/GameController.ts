@@ -60,6 +60,12 @@ const unitCodeList: { code: string; prise: number; weight: number }[] = [
   { code: "コンベアコンバイナ", prise: 6000, weight: 0.5 },
 ];
 
+const extraUnitCodeList = [
+  { code: "コンベア_Lv2", prise: 2000, weight: 0.5 },
+  { code: "直角コンベアR_Lv2", prise: 3000, weight: 0.5 },
+  { code: "直角コンベアL_Lv2", prise: 3000, weight: 0.5 },
+];
+
 const supplyUnitCodeList = [
   { code: "マグロ箱", prise: 600, weight: 0.5 },
   { code: "サーモン箱", prise: 600, weight: 0.5 },
@@ -533,7 +539,9 @@ export function nextGameData(
   const exitUnitCodes = _.uniq(prevMapData.map((v) => v.code));
   const bluePrintCount = 4 + data.xLevel + data.yLevel;
   const requireUnitCodes = getRequireUnitCodes(menuCodes);
-  const bluePrintNormalUnitList = unitCodeList.filter((v) => v.prise <= coin);
+  const bluePrintNormalUnitList = (
+    data.day > 9 ? [...unitCodeList, ...extraUnitCodeList] : unitCodeList
+  ).filter((v) => v.prise <= coin);
   const bluePrintSupplyUnitList = supplyUnitCodeList.filter(
     (v) => _.includes(requireUnitCodes, v.code) && v.prise <= coin
   );
